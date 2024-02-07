@@ -23,7 +23,7 @@ model Users {
   boards Boards[]
   comments comments[]
   followers Follows[] @relation("followed")
-  following Follows[] @relation("follower")
+  followed Follows[] @relation("follower")
   recoms Recom[]
 
 
