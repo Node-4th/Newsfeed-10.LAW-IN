@@ -17,6 +17,7 @@ router.post("/sign-up", async (req, res, next) => {
     });
 
     console.log(isExistUser);
+
     if (isExistUser) {
       return res.status(409).json({ message: "이미 존재하는 이메일 입니다." });
     }

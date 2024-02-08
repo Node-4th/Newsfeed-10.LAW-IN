@@ -30,7 +30,7 @@ model board {
   status    board_status @default(Notset)
   recom     BigInt       @default(0)
   createdAt DateTime     @default(now())
-  updateAt  DateTime
+  updateAt  DateTime     @updatedAt()
   media     String?
   users     users        @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Board_userId_fkey")
   comments  comments[]
