@@ -12,6 +12,7 @@ dotenv.config();
 
 const app = express();
 const PORT = 3010;
+
 app.get("/", (req, res) => {
   return res.status(200).json({ message: "진입성공" });
 });
