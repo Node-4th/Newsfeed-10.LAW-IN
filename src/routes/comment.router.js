@@ -5,42 +5,58 @@ const router = express.Router();
 
 // 댓글 작성
 router.post(
-  "/boards/:boardid/comments",
+  "/boards/:boardId/comments",
   authMiddleware,
   async (req, res, next) => {
     const { boardId } = req.params;
     const { content } = req.body;
-    const { userId } = req.user;
+    const { userId } = req.user.id;
 
-    const post = await prisma.posts.findFirst({ where: { boardId: +boardId } });
+    const board = await prisma.posts.findFirst({
+      where: { boardId: +boardId },
+    });
 
-    // 댓글 달 게시글 존재x
     if (!board) {
-      return res.status(404).json({ success: "게시글이 존재하지 않습니다." });
+      return res
+        .status(404)
+        .json({ errorMessage: "사건이 존재하지 않습니다." });
     }
-    // 댓글 내용 존재x
     if (!content) {
       return res
         .status(400)
-        .json({ message: "작성된 내용이 존재하지 않습니다." });
+        .json({ errorMessage: "작성된 내용이 존재하지 않습니다." });
     }
 
     const comment = await prisma.comments.create({
       data: {
-        boardId: +boardId,
-        userId: +userId,
+        userId: userId,
         content: content,
+        like: like,
+      },
+    });
+
+    const commentInfo = await prisma.comments.findFirst({
+      where: {
+        id: +commentId,
+      },
+      select: {
+        users: {
+          nickname: true,
+        },
+        content: true,
+        createdAt: true,
+        like: true,
       },
     });
 
     return res
       .status(201)
-      .json({ success: "댓글이 생성되었습니다.", data: comment });
+      .json({ success: "댓글이 생성되었습니다.", data: commentInfo });
   }
 );
 
 // 댓글 조회
-router.get("/boards/:boardid/comments"),
+router.get("/boards/:boardId/comments"),
   async (req, res, next) => {
     const commentId = req.params;
 
@@ -67,7 +83,7 @@ router.get("/boards/:boardid/comments"),
 
 // 댓글 수정
 router.patch(
-  "/boards/:boardid/comments/:id",
+  "/boards/:boardId/comments/:id",
   authMiddleware,
   async (req, res, next) => {
     const user = res.user;
@@ -75,12 +91,12 @@ router.patch(
     const { content } = req.body;
     if (!id) {
       return res.status(400).json({
-        success: "id는 필수값입니다.",
+        errorMessage: "id는 필수값입니다.",
       });
     }
     if (!content) {
       return res.status(400).json({
-        success: "작성된 내용이 존재하지 않습니다.",
+        errorMessage: "작성된 내용이 존재하지 않습니다.",
       });
     }
 
@@ -92,13 +108,13 @@ router.patch(
 
     if (!comment) {
       return res.status(400).json({
-        success: "댓글이 존재하지 않습니다.",
+        errorMessage: "댓글이 존재하지 않습니다.",
       });
     }
 
     if (comment.userId !== user.userId) {
       return res.status(400).json({
-        success: "올바르지 않은 요청입니다.",
+        errorMessage: "올바르지 않은 요청입니다.",
       });
     }
 
@@ -117,7 +133,7 @@ router.patch(
 
 // 댓글 삭제
 router.delete(
-  "/boards/:boardid/comments/:id",
+  "/boards/:boardId/comments/:id",
   authMiddleware,
   async (req, res, next) => {
     const user = res.user;
@@ -125,7 +141,7 @@ router.delete(
 
     if (!id) {
       return res.status(400).json({
-        success: "id는 필수값입니다.",
+        errorMessage: "id는 필수값입니다.",
       });
     }
 
@@ -136,10 +152,14 @@ router.delete(
     });
 
     if (!comment) {
-      return res.status(400).json({ success: "댓글이 존재하지 않습니다." });
+      return res
+        .status(400)
+        .json({ errorMessage: "댓글이 존재하지 않습니다." });
     }
     if (comment.userId !== user.userId) {
-      return res.status(400).json({ success: "올바르지 않은 요청입니다." });
+      return res
+        .status(400)
+        .json({ errorMessage: "올바르지 않은 요청입니다." });
     }
 
     await prisma.comment.delete({
