@@ -81,3 +81,4 @@ function tokenCheck(tokenKind) {
   if (tokenType !== "Bearer") throw new Error("토큰 타입이 일치하지 않습니다.");
   else return token;
 }
+
