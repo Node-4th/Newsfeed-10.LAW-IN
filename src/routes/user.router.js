@@ -10,21 +10,59 @@ router.post("/sign-up", async (req, res, next) => {
     const { id, email, password, passwordCheck, nickname, content } = req.body;
 
     console.log(id);
+
+    if (!id) {
+      return res.status(400).json({ message: "아이디가 입력되지 않았습니다." });
+    }
+    if (!email) {
+      return res.status(400).json({ message: "이메일이 입력되지 않았습니다." });
+    }
+    if (!password) {
+      return res
+        .status(400)
+        .json({ message: "비밀번호가 입력되지 않았습니다." });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "비밀번호는 6자 이상이어야 합니다.",
+      });
+    }
+
+    if (!passwordCheck) {
+      return res
+        .status(400)
+        .json({ message: "비밀번호를 다시 한 번 입력해주세요." });
+    }
+    if (password !== passwordCheck) {
+      return res.status(400).json({
+        message: "비밀번호가 일치하지 않습니다.",
+      });
+    }
+
+    if (!nickname) {
+      return res.status(400).json({ message: "별명이 입력되지 않았습니다." });
+    }
+
     const isExistUser = await prisma.users.findFirst({
       where: {
         id: id,
       },
     });
 
-    console.log(isExistUser);
-    if (isExistUser) {
-      return res.status(409).json({ message: "이미 존재하는 이메일 입니다." });
-    }
+    const isExistEmail = await prisma.users.findFirst({
+      where: {
+        email: email,
+      },
+    });
 
-    if (password !== passwordCheck || password.length < 6) {
-      return res.status(400).json({
-        message: "비밀번호의 길이가 짧거나 두 비밀번호가 일치하지 않습니다.",
-      });
+    console.log(isExistUser);
+
+    if (isExistUser) {
+      return res.status(409).json({ message: "이미 존재하는 아이디입니다." });
+    }
+    if (isExistEmail) {
+      return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -128,7 +166,7 @@ router.get("/myInfo", AuthMiddleware, async (req, res) => {
   return res.status(200).json({ data: user });
 });
 
-router.patch("/myInfo", AuthMiddleware, async (req, res) => {
+router.patch("/myinfo", AuthMiddleware, async (req, res) => {
   const { nickname, content, password, passwordCheck } = req.body;
   const { id } = req.user;
 
