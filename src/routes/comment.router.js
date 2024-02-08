@@ -31,7 +31,6 @@ router.post(
       data: {
         userId: userId,
         content: content,
-        like: like,
       },
     });
 
@@ -45,7 +44,6 @@ router.post(
         },
         content: true,
         createdAt: true,
-        like: true,
       },
     });
 
@@ -71,6 +69,7 @@ router.get("/boards/:boardId/comments"),
         },
         content: true,
         createdAt: true,
+        like: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -86,23 +85,28 @@ router.patch(
   "/boards/:boardId/comments/:id",
   authMiddleware,
   async (req, res, next) => {
-    const user = res.user;
-    const boardId = req.params.boardId;
+    const commentId = req.params.id;
+    const userId = req.params.userId;
     const { content } = req.body;
-    if (!id) {
+
+    if (!commentId) {
       return res.status(400).json({
         errorMessage: "id는 필수값입니다.",
       });
     }
     if (!content) {
       return res.status(400).json({
-        errorMessage: "작성된 내용이 존재하지 않습니다.",
+        errorMessage: "수정할 내용을 입력해주세요.",
       });
     }
 
     const comment = await prisma.comments.findFirst({
       where: {
-        id: +id,
+        id: +commentId,
+      },
+      select: {
+        userId: true,
+        content: true,
       },
     });
 
@@ -114,13 +118,13 @@ router.patch(
 
     if (comment.userId !== user.userId) {
       return res.status(400).json({
-        errorMessage: "올바르지 않은 요청입니다.",
+        errorMessage: "본인이 작성한 댓글이 아닙니다.",
       });
     }
 
     await prisma.comment.update({
       where: {
-        boardId: +boardId,
+        id: +commentId,
       },
       data: {
         content,
