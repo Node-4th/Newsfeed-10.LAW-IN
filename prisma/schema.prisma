@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,98 +7,85 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model Users {
-  id          String  @id            @map("id")
-  email       String  @unique        @map("email")
-  password    String                 @map("password")
-  nickname    String                 @map("nickname")
-  content     String?                @map("CONTENT")
-  role        ROLE    @default(USER) @map("role")
-  follow      BigInt  @default(0)
-
-  boards Boards[]
-  comments comments[]
-  followers Follows[] @relation("followed")
-  followed Follows[]  @relation("follower")
-  recoms Recom[]
-
-
-  @@map("Users")
-}
-
-model Boards {
-  id       BigInt @id @default(autoincrement()) @map("id")
-  userId   String @map("userId")
-  title    String @map("title")
-  content  String @map("content")
-  status   progressStatus @default(Notset) @map("status")
-  category Category @default(Unspecified) @map("category")
-  recom    BigInt @default(0) @map("recom")
-  createdAt DateTime @default(now()) @map("createdAt")
-  updateAt DateTime @updatedAt @map("updateAt")
-  media String? @map("media")
-
-
-  comments comments[]
-  recoms Recom[]
-  users Users @relation(fields: [userId], references: [id],onDelete: Cascade)
-  @@map("Board")
-}
-
 model comments {
-  id BigInt @id @default(autoincrement()) @map("id")
-  userId String @map("userId")
-  boardId BigInt @map("boardId")
-  content String @map("content")
+  id        BigInt   @id @default(autoincrement()) @map("id")
+  userId    String   @map("userId")
+  boardId   BigInt   @map("boardId")
+  content   String   @map("content")
   createdAt DateTime @default(now()) @map("createdAt")
-  like BigInt @default(0)
+  like      BigInt   @default(0)
+  boards    board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  users Users @relation(fields: [userId], references: [id],onDelete: Cascade)
-  boards Boards @relation(fields: [boardId], references: [id],onDelete: Cascade)
+  @@index([boardId], map: "comments_boardId_fkey")
+  @@index([userId], map: "comments_userId_fkey")
   @@map("comments")
 }
 
-model Follows {
-  follower    Users @relation("follower", fields: [followerId], references: [id])
-  followerId  String
-  followed   Users @relation("followed", fields: [followedId], references: [id])
-  followedId String
+model board {
+  id        BigInt       @id @default(autoincrement())
+  userId    String
+  title     String
+  content   String
+  status    board_status @default(Notset)
+  recom     BigInt       @default(0)
+  createdAt DateTime     @default(now())
+  updateAt  DateTime
+  media     String?
+  users     users        @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Board_userId_fkey")
+  comments  comments[]
+  recoms     recom[]
+
+  @@index([userId], map: "Board_userId_fkey")
+}
+
+model follows {
+  followerId                      String
+  followedId                      String
+  users_follows_followedIdTousers users  @relation("follows_followedIdTousers", fields: [followedId], references: [id], map: "Follows_followedId_fkey")
+  users_follows_followerIdTousers users  @relation("follows_followerIdTousers", fields: [followerId], references: [id], map: "Follows_followerId_fkey")
 
   @@id([followerId, followedId])
+  @@index([followedId], map: "Follows_followedId_fkey")
 }
 
+model recom {
+  id      BigInt @id @default(autoincrement())
+  userId  String
+  boardId BigInt
+  board   board  @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "Recom_boardId_fkey")
+  users   users  @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Recom_userId_fkey")
 
-model Recom{
-  id BigInt @id @default(autoincrement()) @map("id")
-  userId String @map("userId")
-  boardId BigInt @map("boardId")
-
-  users Users @relation(fields: [userId], references: [id],onDelete: Cascade)
-  boards Boards @relation(fields: [boardId], references: [id],onDelete: Cascade)
+  @@index([boardId], map: "Recom_boardId_fkey")
+  @@index([userId], map: "Recom_userId_fkey")
 }
 
-
-
-enum ROLE{
-  USER
-  LAWYER
-  MANAGER
-  OWNER
+model users {
+  id                                String     @id
+  email                             String     @unique(map: "Users_email_key")
+  password                          String
+  nickname                          String
+  role                              users_role @default(USER)
+  follow                            BigInt     @default(0)
+  content                           String?   
+  token                             String?    @db.Text
+  board                             board[]
+  comments                          comments[]
+  follows_follows_followedIdTousers follows[]  @relation("follows_followedIdTousers")
+  follows_follows_followerIdTousers follows[]  @relation("follows_followerIdTousers")
+  recom                             recom[]
 }
 
-enum progressStatus{
+enum board_status {
   Notset
   Proceeding
   Solved
   Incomplete
 }
 
-enum Category{
-  Unspecified
-  Fraud
-  Affair
-  TrafficAccident
-  Theft
-  Violence
+enum users_role {
+  USER
+  LAWYER
+  MANAGER
+  OWNER
 }

@@ -3,10 +3,10 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import LogMiddleware from "./src/middlewares/log.middleware.js";
 import ErrorHandlingMiddleware from "./src/middlewares/error-handling.middleware.js";
-import UserLouter from "./src/routes/user.router.js";
-import BoardLouter from "./src/routes/board.router.js";
-import CommentLouter from "./src/routes/comment.router.js";
-import AdminLouter from "./src/routes/admin.router.js";
+import UserRouter from "./src/routes/user.router.js";
+import BoardRouter from "./src/routes/board.router.js";
+import CommentRouter from "./src/routes/comment.router.js";
+import AdminRouter from "./src/routes/admin.router.js";
 
 dotenv.config();
 
@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
 app.use(LogMiddleware);
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api", [UserLouter, BoardLouter, CommentLouter, AdminLouter]);
+app.use("/api", [UserRouter, BoardRouter, CommentRouter, AdminRouter]);
 app.use(ErrorHandlingMiddleware);
 
 app.listen(PORT, () => {

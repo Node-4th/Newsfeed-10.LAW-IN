@@ -12,7 +12,7 @@ export default async function (req, res, next) {
       throw new Error("토큰이 존재하지 않습니다.");
     }
 
-    const refresh = await tokencheck(refreshToken);
+    const refresh = await tokenCheck(refreshToken);
     const isExistToken = await prisma.users.findFirst({
       where: {
         token: refresh,
@@ -42,11 +42,11 @@ export default async function (req, res, next) {
       resetAccess = `Bearer ${accessToken}`;
     }
 
-    const access = tokencheck(resetAccess);
+    const access = tokenCheck(resetAccess);
     const decodedToken = jwt.verify(access, process.env.JWT_SECRET_KEY);
     const id = decodedToken.id;
     const user = await prisma.users.findFirst({
-      where: { id: +id },
+      where: { id: id },
     });
 
     if (!user) {
@@ -61,18 +61,22 @@ export default async function (req, res, next) {
     res.clearCookie("accessToken");
     switch (error.name) {
       case "TokenExpiredError":
-        return res.status(401).json({ message: "토큰이 만료되었습니다. 다시 로그인 해주세요" });
+        return res
+          .status(401)
+          .json({ message: "토큰이 만료되었습니다. 다시 로그인 해주세요" });
 
       case "JsonWebTokenError":
         return res.status(401).json({ message: "토큰이 조작되었습니다." });
 
       default:
-        return res.status(401).json({ message: error.message ?? "비정상적인 요청입니다." });
+        return res
+          .status(401)
+          .json({ message: error.message ?? "비정상적인 요청입니다." });
     }
   }
 }
 
-function tokencheck(tokenKind) {
+function tokenCheck(tokenKind) {
   const [tokenType, token] = tokenKind.split(" ");
   if (tokenType !== "Bearer") throw new Error("토큰 타입이 일치하지 않습니다.");
   else return token;
