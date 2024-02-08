@@ -139,6 +139,27 @@ router.post('/sign-in', async (req, res) => {
   return res.status(200).json({ message: '로그인에 성공하였습니다.' });
 });
 
+//NOTE - 로그아웃
+router.post('/log-out', AuthMiddleware, async (req, res) => {
+  const { id, token } = req.user;
+  if (!token) {
+    return res.status(400).json({ success: false, message: '토큰이 존재하지 않습니다.' });
+  }
+
+  await prisma.users.update({
+    where: {
+      id,
+    },
+    data: {
+      token: null,
+    },
+  });
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+
+  return res.status(200).json({ success: true, message: '로그아웃이 성공적으로 완료 되었습니다.' });
+});
+
 //NOTE - 내정보 조회
 router.get('/myInfo', AuthMiddleware, async (req, res) => {
   const { id } = req.user;
