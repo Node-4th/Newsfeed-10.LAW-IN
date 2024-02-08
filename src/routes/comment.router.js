@@ -42,10 +42,10 @@ router.post(
 // 댓글 조회
 router.get("/boards/:boardid/comments"),
   async (req, res, next) => {
-    const { boardId } = req.params;
+    const commentId = req.params;
 
     const comments = await prisma.comments.findMany({
-      where: { boardId: +boardId },
+      where: { commentId: +commentId },
       select: {
         id: true,
         select: {
