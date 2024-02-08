@@ -7,7 +7,7 @@ const router = express.Router();
 /** 게시물 생성 API **/
 router.post("/boards", authMiddleware, async (req, res, next) => {
   try {
-    const user = res.locals.user;
+    const id = req.user;
     const { status, category, title, content } = req.body;
 
     if (!title) {
@@ -21,8 +21,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
 
     const board = await prisma.boards.create({
       data: {
-        userName: user.nickName,
-        role: user.role,
+        userId: id,
         category,
         title,
         content,
@@ -30,9 +29,33 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
       },
     });
 
+    const boardId = Number(board.id);
+
+    const createdBoard = await prisma.boards.findFirst({
+      where: {
+        id: +boardId,
+      },
+      select: {
+        users: {
+          select: {
+            nickname: true,
+            role: true,
+          },
+        },
+        category: true,
+        title: true,
+        content: true,
+        status: true,
+        recom: true,
+        createdAt: true,
+      },
+    });
+
+    createdBoard.recom = createdBoard.recom.toString;
+
     return res
       .status(201)
-      .json({ success: "사건 생성이 완료되었습니다.", data: board });
+      .json({ success: "사건 생성이 완료되었습니다.", data: createdBoard });
   } catch (error) {
     next(error);
   }
@@ -58,8 +81,12 @@ router.get("/boards", async (req, res, next) => {
     const boards = await prisma.boards.findMany({
       select: {
         id: true,
-        nickName: true,
-        role: true,
+        users: {
+          select: {
+            nickname: true,
+            role: true,
+          },
+        },
         category: true,
         title: true,
         status: true,
@@ -71,7 +98,9 @@ router.get("/boards", async (req, res, next) => {
       },
     });
 
-    if (!boards) {
+    console.log(boards);
+
+    if (!boards.length) {
       return res
         .status(404)
         .json({ errorMessage: "사건 조회에 실패하였습니다." });
@@ -103,8 +132,12 @@ router.get("/boards/:id", async (req, res, next) => {
         id: +id,
       },
       select: {
-        nickName: true,
-        role: true,
+        users: {
+          select: {
+            nickname: true,
+            role: true,
+          },
+        },
         category: true,
         title: true,
         content: true,
@@ -217,12 +250,10 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
       },
     });
 
-    return res
-      .status(200)
-      .json({
-        success: "사건이 성공적으로 삭제되었습니다.",
-        data: deleteBoard,
-      });
+    return res.status(200).json({
+      success: "사건이 성공적으로 삭제되었습니다.",
+      data: deleteBoard,
+    });
   } catch (error) {
     next(error);
   }
