@@ -9,8 +9,6 @@ router.post("/sign-up", async (req, res, next) => {
   try {
     const { id, email, password, passwordCheck, nickname, content } = req.body;
 
-    console.log(id);
-
     if (!id) {
       return res.status(400).json({ message: "아이디가 입력되지 않았습니다." });
     }
@@ -55,8 +53,6 @@ router.post("/sign-up", async (req, res, next) => {
         email: email,
       },
     });
-
-    console.log(isExistUser);
 
     if (isExistUser) {
       return res.status(409).json({ message: "이미 존재하는 아이디입니다." });
