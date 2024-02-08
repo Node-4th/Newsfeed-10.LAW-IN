@@ -4,8 +4,8 @@ import { prisma } from '../utils/prisma/index.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 const router = express.Router();
-const prisma = new PrismaClient();
 
+//NOTE - 회원가입
 router.post('/sign-up', async (req, res, next) => {
   try {
     const { id, email, password, passwordCheck, nickname, content } = req.body;
@@ -66,19 +66,36 @@ router.post('/sign-up', async (req, res, next) => {
   }
 });
 
-//회원탈퇴
-router.delete('/sign-out', async (req, res) => {
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: '인증되지 않은 요청입니다.' });
+//NOTE - 회원탈퇴
+router.delete('/sign-out', AuthMiddleware, async (req, res) => {
+  const { id } = req.user;
+  const { password } = req.body;
+  if (!id) {
+    return res.status(400).json({ success: false, message: '사용자가 찾을 수 없습니다.' });
   }
-  try {
-    const decodedToken = jwt.verify(token, 'lawin_secret_key');
-  } catch {}
+  const user = await prisma.users.findFirst({
+    where: {
+      id,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: '해당 ID로 사용자를 찾을 수 없습니다.' });
+  } else if (!(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
+  }
+
+  // 사용자를 삭제합니다.
+  await prisma.users.delete({
+    where: {
+      id: user.id,
+    },
+  });
+
+  return res.status(200).json({ success: true, message: '사용자가 성공적으로 삭제되었습니다.' });
 });
 
-//로그인
+//NOTE - 로그인
 router.post('/sign-in', async (req, res) => {
   const { id, password } = req.body;
 
@@ -122,6 +139,7 @@ router.post('/sign-in', async (req, res) => {
   return res.status(200).json({ message: '로그인에 성공하였습니다.' });
 });
 
+//NOTE - 내정보 조회
 router.get('/myInfo', AuthMiddleware, async (req, res) => {
   const { id } = req.user;
 
@@ -142,6 +160,7 @@ router.get('/myInfo', AuthMiddleware, async (req, res) => {
   return res.status(200).json({ data: user });
 });
 
+//NOTE - 내정보 수정
 router.patch('/myInfo', AuthMiddleware, async (req, res) => {
   const { nickname, content, password, passwordCheck } = req.body;
   const { id } = req.user;
