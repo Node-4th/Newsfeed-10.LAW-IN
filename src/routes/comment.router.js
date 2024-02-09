@@ -10,7 +10,7 @@ router.post("/boards/:boardId/comments", authMiddleware, async (req, res, next) 
   const { content } = req.body;
   const { id } = req.user;
 
-  const board = await prisma.board.findFirst({
+  const board = await prisma.boards.findFirst({
     where: { id: +boardId },
   });
 

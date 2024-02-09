@@ -17,7 +17,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ errorMessage: "사건 내용을 입력해주세요." });
     }
 
-    const board = await prisma.board.create({
+    const board = await prisma.boards.create({
       data: {
         userId: id,
         category,
@@ -29,7 +29,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
 
     const boardId = Number(board.id);
 
-    const createdBoard = await prisma.board.findFirst({
+    const createdBoard = await prisma.boards.findFirst({
       where: {
         id: +boardId,
       },
@@ -70,7 +70,7 @@ router.get("/boards", async (req, res, next) => {
   }
 
   try {
-    const boards = await prisma.board.findMany({
+    const boards = await prisma.boards.findMany({
       select: {
         id: true,
         users: {
@@ -117,7 +117,7 @@ router.get("/boards/:id", async (req, res, next) => {
     const { id } = req.params;
     const boardId = Number(id);
 
-    const board = await prisma.board.findFirst({
+    const board = await prisma.boards.findFirst({
       where: {
         id: +boardId,
       },
@@ -170,7 +170,7 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
     const userId = req.user.id;
     const boardId = Number(id);
 
-    const board = await prisma.board.findFirst({
+    const board = await prisma.boards.findFirst({
       where: {
         id: +boardId,
       },
@@ -190,7 +190,7 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
     }
 
-    const updateBoard = await prisma.board.update({
+    const updateBoard = await prisma.boards.update({
       where: {
         id: +id,
       },
@@ -217,7 +217,7 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
     const { id } = req.params;
     const boardId = Number(id);
 
-    const board = await prisma.board.findFirst({
+    const board = await prisma.boards.findFirst({
       where: {
         id: +boardId,
       },
@@ -233,7 +233,7 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
     }
 
-    const deleteBoard = await prisma.board.delete({
+    const deleteBoard = await prisma.boards.delete({
       where: {
         id: +id,
       },
