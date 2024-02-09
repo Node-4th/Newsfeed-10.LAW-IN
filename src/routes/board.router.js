@@ -8,20 +8,13 @@ const router = express.Router();
 router.post("/boards", authMiddleware, async (req, res, next) => {
   try {
     const id = req.user.id;
-    const {
-      status = Notset,
-      category = Unspecified,
-      title,
-      content,
-    } = req.body;
+    const { status = Notset, category = Unspecified, title, content } = req.body;
 
     if (!title) {
       return res.status(400).json({ errorMessage: "제목을 입력해주세요." });
     }
     if (!content) {
-      return res
-        .status(400)
-        .json({ errorMessage: "사건 내용을 입력해주세요." });
+      return res.status(400).json({ errorMessage: "사건 내용을 입력해주세요." });
     }
 
     const board = await prisma.board.create({
@@ -58,9 +51,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
 
     createdBoard.recom = createdBoard.recom.toString;
 
-    return res
-      .status(201)
-      .json({ success: "사건 생성이 완료되었습니다.", data: createdBoard });
+    return res.status(201).json({ success: "사건 생성이 완료되었습니다.", data: createdBoard });
   } catch (error) {
     next(error);
   }
@@ -72,14 +63,10 @@ router.get("/boards", async (req, res, next) => {
   const orderValue = req.query.orderValue ?? "desc";
 
   if (!["id", "status"].includes(orderKey)) {
-    return res
-      .status(400)
-      .json({ errorMessage: "orderKey가 올바르지 않습니다." });
+    return res.status(400).json({ errorMessage: "orderKey가 올바르지 않습니다." });
   }
   if (!["asc", "desc"].includes(orderValue.toLocaleLowerCase())) {
-    return res
-      .status(400)
-      .json({ errorMessage: "orderValue가 올바르지 않습니다." });
+    return res.status(400).json({ errorMessage: "orderValue가 올바르지 않습니다." });
   }
 
   try {
@@ -106,14 +93,10 @@ router.get("/boards", async (req, res, next) => {
     console.log(boards);
 
     if (!boards.length) {
-      return res
-        .status(404)
-        .json({ errorMessage: "사건 조회에 실패하였습니다." });
+      return res.status(404).json({ errorMessage: "사건 조회에 실패하였습니다." });
     }
 
-    return res
-      .status(200)
-      .json({ success: "사건이 성공적으로 조회되었습니다." });
+    return res.status(200).json({ success: "사건이 성공적으로 조회되었습니다." });
   } catch (error) {
     next(error);
   }
@@ -156,14 +139,10 @@ router.get("/boards/:id", async (req, res, next) => {
     console.log("🚀 ~ router.get ~ board:", board);
 
     if (!board) {
-      return res
-        .status(404)
-        .json({ errorMessage: "사건 조회에 실패하였습니다." });
+      return res.status(404).json({ errorMessage: "사건 조회에 실패하였습니다." });
     }
 
-    return res
-      .status(200)
-      .json({ success: "사건이 성공적으로 조회되었습니다." });
+    return res.status(200).json({ success: "사건이 성공적으로 조회되었습니다." });
   } catch (error) {
     next(error);
   }
@@ -176,24 +155,16 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
     const { category, title, content, status } = req.body;
 
     if (!category) {
-      return res
-        .status(400)
-        .json({ errorMessage: "수정할 카테고리를 입력해주세요." });
+      return res.status(400).json({ errorMessage: "수정할 카테고리를 입력해주세요." });
     }
     if (!title) {
-      return res
-        .status(400)
-        .json({ errorMessage: "수정할 제목을 입력해주세요." });
+      return res.status(400).json({ errorMessage: "수정할 제목을 입력해주세요." });
     }
     if (!content) {
-      return res
-        .status(400)
-        .json({ errorMessage: "수정할 내용을 입력해주세요." });
+      return res.status(400).json({ errorMessage: "수정할 내용을 입력해주세요." });
     }
     if (!status) {
-      return res
-        .status(400)
-        .json({ errorMessage: "변경할 상태를 입력해주세요." });
+      return res.status(400).json({ errorMessage: "변경할 상태를 입력해주세요." });
     }
 
     const userId = req.user.id;
@@ -213,14 +184,10 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
     });
 
     if (!board) {
-      return res
-        .status(404)
-        .json({ errorMessage: "사건 조회에 실패하였습니다." });
+      return res.status(404).json({ errorMessage: "사건 조회에 실패하였습니다." });
     }
     if (userId !== board.userId) {
-      return res
-        .status(404)
-        .json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
+      return res.status(404).json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
     }
 
     const updateBoard = await prisma.board.update({
@@ -259,15 +226,11 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
     const userId = req.user.id;
 
     if (!board) {
-      return res
-        .status(404)
-        .json({ errorMessage: "사건 조회에 실패하였습니다." });
+      return res.status(404).json({ errorMessage: "사건 조회에 실패하였습니다." });
     }
 
     if (userId !== board.userId) {
-      return res
-        .status(404)
-        .json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
+      return res.status(404).json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
     }
 
     const deleteBoard = await prisma.board.delete({

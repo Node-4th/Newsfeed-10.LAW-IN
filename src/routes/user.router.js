@@ -17,9 +17,7 @@ router.post("/sign-up", async (req, res, next) => {
       return res.status(400).json({ message: "이메일이 입력되지 않았습니다." });
     }
     if (!password) {
-      return res
-        .status(400)
-        .json({ message: "비밀번호가 입력되지 않았습니다." });
+      return res.status(400).json({ message: "비밀번호가 입력되지 않았습니다." });
     }
 
     if (password.length < 6) {
@@ -29,9 +27,7 @@ router.post("/sign-up", async (req, res, next) => {
     }
 
     if (!passwordCheck) {
-      return res
-        .status(400)
-        .json({ message: "비밀번호를 다시 한 번 입력해주세요." });
+      return res.status(400).json({ message: "비밀번호를 다시 한 번 입력해주세요." });
     }
     if (password !== passwordCheck) {
       return res.status(400).json({
@@ -105,9 +101,7 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   const { id } = req.user;
   const { password } = req.body;
   if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "사용자가 찾을 수 없습니다." });
+    return res.status(400).json({ success: false, message: "사용자가 찾을 수 없습니다." });
   }
   const user = await prisma.users.findFirst({
     where: {
@@ -116,12 +110,10 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   });
 
   if (!user) {
-    return res
-      .status(404)
-      .json({
-        success: false,
-        message: "해당 ID로 사용자를 찾을 수 없습니다.",
-      });
+    return res.status(404).json({
+      success: false,
+      message: "해당 ID로 사용자를 찾을 수 없습니다.",
+    });
   } else if (!(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
@@ -133,9 +125,7 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
     },
   });
 
-  return res
-    .status(200)
-    .json({ success: true, message: "사용자가 성공적으로 삭제되었습니다." });
+  return res.status(200).json({ success: true, message: "사용자가 성공적으로 삭제되었습니다." });
 });
 
 //NOTE - 로그인
@@ -186,9 +176,7 @@ router.post("/sign-in", async (req, res) => {
 router.post("/log-out", AuthMiddleware, async (req, res) => {
   const { id, token } = req.user;
   if (!token) {
-    return res
-      .status(400)
-      .json({ success: false, message: "토큰이 존재하지 않습니다." });
+    return res.status(400).json({ success: false, message: "토큰이 존재하지 않습니다." });
   }
 
   await prisma.users.update({
@@ -202,9 +190,7 @@ router.post("/log-out", AuthMiddleware, async (req, res) => {
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
 
-  return res
-    .status(200)
-    .json({ success: true, message: "로그아웃이 성공적으로 완료 되었습니다." });
+  return res.status(200).json({ success: true, message: "로그아웃이 성공적으로 완료 되었습니다." });
 });
 
 //NOTE - 내정보 조회
@@ -275,9 +261,7 @@ router.patch("/myInfo", AuthMiddleware, async (req, res) => {
     userInfo.follow = user.follow.toString();
     return userInfo;
   });
-  return res
-    .status(201)
-    .json({ success: "이력서 수정에 성공하였습니다.", userInfo: updateUser });
+  return res.status(201).json({ success: "이력서 수정에 성공하였습니다.", userInfo: updateUser });
 });
 
 export default router;

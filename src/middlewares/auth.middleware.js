@@ -61,17 +61,13 @@ export default async function (req, res, next) {
     res.clearCookie("accessToken");
     switch (error.name) {
       case "TokenExpiredError":
-        return res
-          .status(401)
-          .json({ message: "토큰이 만료되었습니다. 다시 로그인 해주세요" });
+        return res.status(401).json({ message: "토큰이 만료되었습니다. 다시 로그인 해주세요" });
 
       case "JsonWebTokenError":
         return res.status(401).json({ message: "토큰이 조작되었습니다." });
 
       default:
-        return res
-          .status(401)
-          .json({ message: error.message ?? "비정상적인 요청입니다." });
+        return res.status(401).json({ message: error.message ?? "비정상적인 요청입니다." });
     }
   }
 }
@@ -81,4 +77,3 @@ function tokenCheck(tokenKind) {
   if (tokenType !== "Bearer") throw new Error("토큰 타입이 일치하지 않습니다.");
   else return token;
 }
-
