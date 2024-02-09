@@ -7,8 +7,13 @@ const router = express.Router();
 /** 게시물 생성 API **/
 router.post("/boards", authMiddleware, async (req, res, next) => {
   try {
-    const id = req.user;
-    const { status, category, title, content } = req.body;
+    const id = req.user.id;
+    const {
+      status = Notset,
+      category = Unspecified,
+      title,
+      content,
+    } = req.body;
 
     if (!title) {
       return res.status(400).json({ errorMessage: "제목을 입력해주세요." });
@@ -19,7 +24,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
         .json({ errorMessage: "사건 내용을 입력해주세요." });
     }
 
-    const board = await prisma.boards.create({
+    const board = await prisma.board.create({
       data: {
         userId: id,
         category,
@@ -31,7 +36,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
 
     const boardId = Number(board.id);
 
-    const createdBoard = await prisma.boards.findFirst({
+    const createdBoard = await prisma.board.findFirst({
       where: {
         id: +boardId,
       },
@@ -78,7 +83,7 @@ router.get("/boards", async (req, res, next) => {
   }
 
   try {
-    const boards = await prisma.boards.findMany({
+    const boards = await prisma.board.findMany({
       select: {
         id: true,
         users: {
@@ -108,7 +113,7 @@ router.get("/boards", async (req, res, next) => {
 
     return res
       .status(200)
-      .json({ success: "사건이 성공적으로 조회되었습니다.", data: boards });
+      .json({ success: "사건이 성공적으로 조회되었습니다." });
   } catch (error) {
     next(error);
   }
@@ -127,9 +132,11 @@ router.post("/boards/follow", authMiddleware, async (req, res, next) => {
 router.get("/boards/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const board = await prisma.boards.findFirst({
+    const boardId = Number(id);
+
+    const board = await prisma.board.findFirst({
       where: {
-        id: +id,
+        id: +boardId,
       },
       select: {
         users: {
@@ -146,6 +153,7 @@ router.get("/boards/:id", async (req, res, next) => {
         createdAt: true,
       },
     });
+    console.log("🚀 ~ router.get ~ board:", board);
 
     if (!board) {
       return res
@@ -155,7 +163,7 @@ router.get("/boards/:id", async (req, res, next) => {
 
     return res
       .status(200)
-      .json({ success: "사건이 성공적으로 조회되었습니다.", data: board });
+      .json({ success: "사건이 성공적으로 조회되었습니다." });
   } catch (error) {
     next(error);
   }
@@ -180,7 +188,7 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
     if (!content) {
       return res
         .status(400)
-        .json({ errorMessage: "수정할 자기소개를 입력해주세요." });
+        .json({ errorMessage: "수정할 내용을 입력해주세요." });
     }
     if (!status) {
       return res
@@ -188,11 +196,15 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
         .json({ errorMessage: "변경할 상태를 입력해주세요." });
     }
 
-    const board = await prisma.boards.findFirst({
+    const userId = req.user.id;
+    const boardId = Number(id);
+
+    const board = await prisma.board.findFirst({
       where: {
-        id: +id,
+        id: +boardId,
       },
       select: {
+        userId: true,
         category: true,
         title: true,
         content: true,
@@ -205,8 +217,13 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
         .status(404)
         .json({ errorMessage: "사건 조회에 실패하였습니다." });
     }
+    if (userId !== board.userId) {
+      return res
+        .status(404)
+        .json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
+    }
 
-    const updateBoard = await prisma.boards.update({
+    const updateBoard = await prisma.board.update({
       where: {
         id: +id,
       },
@@ -217,10 +234,10 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
         content: content,
       },
     });
+    console.log("🚀 ~ router.patch ~ updateBoard:", updateBoard);
 
     return res.status(200).json({
       success: "사건이 성공적으로 수정되었습니다.",
-      data: updateBoard,
     });
   } catch (error) {
     next(error);
@@ -231,12 +248,15 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
 router.delete("/boards/:id", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
+    const boardId = Number(id);
 
-    const board = await prisma.boards.findFirst({
+    const board = await prisma.board.findFirst({
       where: {
-        id: +id,
+        id: +boardId,
       },
     });
+
+    const userId = req.user.id;
 
     if (!board) {
       return res
@@ -244,15 +264,21 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
         .json({ errorMessage: "사건 조회에 실패하였습니다." });
     }
 
-    const deleteBoard = await prisma.boards.delete({
+    if (userId !== board.userId) {
+      return res
+        .status(404)
+        .json({ errorMessage: "본인이 작성한 사건이 아닙니다." });
+    }
+
+    const deleteBoard = await prisma.board.delete({
       where: {
         id: +id,
       },
     });
+    console.log("🚀 ~ router.delete ~ deleteBoard:", deleteBoard);
 
     return res.status(200).json({
       success: "사건이 성공적으로 삭제되었습니다.",
-      data: deleteBoard,
     });
   } catch (error) {
     next(error);

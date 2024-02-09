@@ -28,13 +28,14 @@ model board {
   title     String
   content   String
   status    board_status @default(Notset)
+  category  Category     @default(Unspecified) @map("category")
   recom     BigInt       @default(0)
   createdAt DateTime     @default(now())
-  updateAt  DateTime     @updatedAt()
+  updateAt  DateTime     @updatedAt
   media     String?
   users     users        @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Board_userId_fkey")
   comments  comments[]
-  recoms     recom[]
+  recoms    recom[]
 
   @@index([userId], map: "Board_userId_fkey")
 }
@@ -67,7 +68,7 @@ model users {
   nickname                          String
   role                              users_role @default(USER)
   follow                            BigInt     @default(0)
-  content                           String?   
+  content                           String?
   token                             String?    @db.Text
   board                             board[]
   comments                          comments[]
@@ -88,4 +89,13 @@ enum users_role {
   LAWYER
   MANAGER
   OWNER
+}
+
+enum Category {
+  Unspecified
+  Fraud
+  Affair
+  TrafficAccident
+  Theft
+  Violence
 }
