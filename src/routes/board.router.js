@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/boards", authMiddleware, async (req, res, next) => {
   try {
     const id = req.user.id;
-    const { status = Notset, category = Unspecified, title, content } = req.body;
+    const { status = "Notset", category = "Unspecified", title, content } = req.body;
 
     if (!title) {
       return res.status(400).json({ errorMessage: "제목을 입력해주세요." });
@@ -59,17 +59,17 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
 
 /** 게시글 목록 조회 API **/
 router.get("/boards", async (req, res, next) => {
-  const orderKey = req.query.orderKey ?? "id";
-  const orderValue = req.query.orderValue ?? "desc";
-
-  if (!["id", "status"].includes(orderKey)) {
-    return res.status(400).json({ errorMessage: "orderKey가 올바르지 않습니다." });
-  }
-  if (!["asc", "desc"].includes(orderValue.toLocaleLowerCase())) {
-    return res.status(400).json({ errorMessage: "orderValue가 올바르지 않습니다." });
-  }
-
   try {
+    const orderKey = req.query.orderKey ?? "id";
+    const orderValue = req.query.orderValue ?? "desc";
+
+    if (!["id", "status"].includes(orderKey)) {
+      return res.status(400).json({ errorMessage: "orderKey가 올바르지 않습니다." });
+    }
+    if (!["asc", "desc"].includes(orderValue.toLocaleLowerCase())) {
+      return res.status(400).json({ errorMessage: "orderValue가 올바르지 않습니다." });
+    }
+
     const boards = await prisma.boards.findMany({
       select: {
         id: true,
@@ -103,8 +103,58 @@ router.get("/boards", async (req, res, next) => {
 });
 
 /** 팔로우한 회원 게시글 조회 API **/
-router.post("/boards/follow", authMiddleware, async (req, res, next) => {
+router.get("/boards/follow", authMiddleware, async (req, res, next) => {
   try {
+    const orderKey = req.query.orderKey ?? "id";
+    const orderValue = req.query.orderValue ?? "desc";
+
+    if (!["id", "status"].includes(orderKey)) {
+      return res.status(400).json({ errorMessage: "orderKey가 올바르지 않습니다." });
+    }
+    if (!["asc", "desc"].includes(orderValue.toLocaleLowerCase())) {
+      return res.status(400).json({ errorMessage: "orderValue가 올바르지 않습니다." });
+    }
+
+    const userId = req.user.id;
+    const followedUsers = await prisma.follows.findMany({
+      where: {
+        followerId: userId,
+      },
+      select: { followedId: true },
+    });
+
+    console.log("🚀 ~ router.get ~ followedUsers:", followedUsers);
+
+    const boards = await prisma.boards.findMany({
+      where: {
+        userId: followedUsers.followedId,
+      },
+      select: {
+        id: true,
+        users: {
+          select: {
+            nickname: true,
+            role: true,
+          },
+        },
+        category: true,
+        title: true,
+        status: true,
+        recom: true,
+        createdAt: true,
+      },
+      orderBy: {
+        [orderKey]: orderValue,
+      },
+    });
+
+    console.log("🚀 ~ router.get ~ boards:", boards);
+
+    if (!boards.length) {
+      return res.status(404).json({ errorMessage: "조회된 사건이 없습니다." });
+    }
+
+    return res.status(200).json({ success: "사건이 성공적으로 조회되었습니다." });
     // 팔로우 로직 추가 후 수정하기
   } catch (error) {
     next(error);
