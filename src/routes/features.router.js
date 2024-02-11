@@ -164,8 +164,8 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
   const { id } = req.user;
   const { followedId } = req.body;
 
-  if (!id) {
-    return res.status(400).json({ errorMessage: "로그인을 해주세요" });
+  if (!followedId) {
+    return res.status(400).json({ errorMessage: "팔로우하려는 유저의 ID를 작성해주세요" });
   }
 
   const user = await prisma.users.findFirst({
