@@ -1,5 +1,6 @@
 import express from "express";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
+import nodemailer from "nodemailer";
 import { prisma } from "../utils/prisma/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -96,12 +97,119 @@ router.post("/sign-up", async (req, res, next) => {
   }
 });
 
+// NOTE - 인증번호 발송
+router.get("/mail-check", AuthMiddleware, async (req, res) => {
+  try {
+    const { email } = req.user;
+
+    const authCode = Math.random().toString(36).substring(2, 8);
+    const hashedCode = await bcrypt.hash(authCode, 10);
+
+    const checkMail = (data) => {
+      return `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>이메일 인증</title>
+            </head>
+            <body>
+                <div> 인증번호는 ${data} 입니다. </div>
+            </body>
+            </html>
+            `;
+    };
+
+    const getEmailData = (to, authCode) => {
+      return {
+        from: process.env.NODEMAILER_USER,
+        to,
+        subject: "이메일 인증",
+        html: checkMail(authCode),
+      };
+    };
+
+    const sendEmail = (to, authCode) => {
+      const smtpTransport = nodemailer.createTransport({
+        pool: true,
+        service: "naver",
+        host: "smtp.naver.com",
+        port: 587,
+        secure: false,
+        requireTLS: true,
+        auth: {
+          user: process.env.NODEMAILER_USER, // 보내는 사람 이메일
+          pass: process.env.NODEMAILER_PASS, // 비밀번호
+        },
+        tls: { rejectUnauthorized: false },
+      });
+
+      const mail = getEmailData(to, authCode);
+
+      smtpTransport.sendMail(mail, function (error, response) {
+        if (error) {
+          console.error("이메일 전송 실패:", error);
+          smtpTransport.close();
+          return res.status(500).json({ message: "인증 메일 전송에 실패했습니다." });
+        } else {
+          console.log("이메일 전송 성공.");
+          smtpTransport.close();
+        }
+      });
+    };
+
+    sendEmail(email, authCode);
+
+    res.cookie("authCode", hashedCode, { maxAge: 3600000 });
+
+    return res.status(200).json({ success: true, message: "인증 메일이 발송되었습니다." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// NOTE - 인증번호 확인
+router.post("/mail-check", AuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { authCode } = req.body;
+
+    if (req.user.isEmailValid) {
+      return res.status(401).json({ message: "이미 인증된 사용자입니다." });
+    }
+
+    if (!authCode) {
+      return res.status(401).json({ message: "인증 번호를 입력해주세요." });
+    }
+
+    if (!(await bcrypt.compare(authCode, req.cookies.authCode))) {
+      return res.status(401).json({ message: "인증번호가 일치하지 않습니다." });
+    }
+
+    await prisma.users.update({
+      where: {
+        id,
+      },
+      data: {
+        isEmailValid: true,
+      },
+    });
+
+    res.clearCookie("authCode");
+
+    return res.status(200).json({ success: true, message: "이메일 인증이 완료되었습니다." });
+  } catch (err) {
+    next(err);
+  }
+});
+
 //NOTE - 회원탈퇴
 router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   const { id } = req.user;
   const { password } = req.body;
   if (!id) {
-    return res.status(400).json({ success: false, message: "사용자가 찾을 수 없습니다." });
+    return res.status(400).json({ success: false, message: "사용자를 찾을 수 없습니다." });
   }
   const user = await prisma.users.findFirst({
     where: {

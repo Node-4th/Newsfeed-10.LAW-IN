@@ -54,6 +54,12 @@ export default async function (req, res, next) {
       res.clearCookie("accessToken");
       throw new Error("토큰 사용자가 존재하지 않습니다.");
     }
+
+    // // 이메일 인증 확인
+    // if (!user.isValidMail) {
+    //   throw new Error("이메일 인증 후 이용해주세요.");
+    // }
+
     req.user = user;
     next();
   } catch (error) {
