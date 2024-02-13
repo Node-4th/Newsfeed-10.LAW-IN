@@ -1,13 +1,13 @@
 import express from "express";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
-import MailingMiddleware from "../middlewares/mailing.middleware.js";
+import nodemailer from "nodemailer";
 import { prisma } from "../utils/prisma/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 const router = express.Router();
 
 //NOTE - 회원가입
-router.post("/sign-up", MailingMiddleware, async (req, res, next) => {
+router.post("/sign-up", async (req, res, next) => {
   try {
     const { id, email, password, passwordCheck, nickname, content } = req.body;
 
@@ -91,12 +91,85 @@ router.post("/sign-up", MailingMiddleware, async (req, res, next) => {
       return userInfo;
     });
 
-    return res.status(201).json({ message: "인증 메일이 발송되었습니다.", userInfo: createdUser });
+    return res.status(201).json({ userInfo: createdUser });
   } catch (err) {
     next(err);
   }
 });
 
+// NOTE - 인증번호 발송
+router.get("/mail-check", AuthMiddleware, async (req, res) => {
+  try {
+    const { email } = req.user;
+
+    const authCode = Math.random().toString(36).substring(2, 8);
+    const hashedCode = await bcrypt.hash(authCode, 10);
+
+    const checkMail = (data) => {
+      return `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>이메일 인증</title>
+            </head>
+            <body>
+                <div> 인증번호는 ${data} 입니다. </div>
+            </body>
+            </html>
+            `;
+    };
+
+    const getEmailData = (to, authCode) => {
+      return {
+        from: process.env.NODEMAILER_USER,
+        to,
+        subject: "이메일 인증",
+        html: checkMail(authCode),
+      };
+    };
+
+    const sendEmail = (to, authCode) => {
+      const smtpTransport = nodemailer.createTransport({
+        pool: true,
+        service: "naver",
+        host: "smtp.naver.com",
+        port: 587,
+        secure: false,
+        requireTLS: true,
+        auth: {
+          user: process.env.NODEMAILER_USER, // 보내는 사람 이메일
+          pass: process.env.NODEMAILER_PASS, // 비밀번호
+        },
+        tls: { rejectUnauthorized: false },
+      });
+
+      const mail = getEmailData(to, authCode);
+
+      smtpTransport.sendMail(mail, function (error, response) {
+        if (error) {
+          console.error("이메일 전송 실패:", error);
+          smtpTransport.close();
+          return res.status(500).json({ message: "인증 메일 전송에 실패했습니다." });
+        } else {
+          console.log("이메일 전송 성공.");
+          smtpTransport.close();
+        }
+      });
+    };
+
+    sendEmail(email, authCode);
+
+    res.cookie("authCode", hashedCode, { maxAge: 3600000 });
+
+    return res.status(200).json({ success: true, message: "인증 메일이 발송되었습니다." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// NOTE - 인증번호 확인
 router.post("/mail-check", AuthMiddleware, async (req, res) => {
   try {
     const { id } = req.user;
