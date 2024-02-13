@@ -100,6 +100,7 @@ router.post("/sign-up", async (req, res, next) => {
 router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   const { id } = req.user;
   const { password } = req.body;
+
   if (!id) {
     return res.status(400).json({ success: false, message: "사용자가 찾을 수 없습니다." });
   }

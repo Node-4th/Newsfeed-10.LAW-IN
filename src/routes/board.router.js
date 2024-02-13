@@ -291,7 +291,7 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
     console.log("🚀 ~ router.delete ~ deleteBoard:", deleteBoard);
 
     return res.status(200).json({
-      success: "사건이 성공적으로 삭제되었습니다.",
+      success: "게시글 삭제가 완료되었습니다.",
     });
   } catch (error) {
     next(error);
