@@ -26,9 +26,6 @@ const imageUploader = multer({
         // extension 확인을 위한 코드로, 없어도 무관합니다.
         return callback(new Error("wrong extension"));
       }
-      console.log("이쪽 들어오기는 함");
-      console.log("uploadDirectory => ", uploadDirectory);
-      console.log("extension => ", extension);
       callback(null, `${uploadDirectory}/${Date.now()}_${file.originalname}`);
       // 콜백함수의 두번째 인자로 들어가는 것은 업로드 경로
       // 경로에 / 를 포함하면 폴더를 자동으로 생성해줌

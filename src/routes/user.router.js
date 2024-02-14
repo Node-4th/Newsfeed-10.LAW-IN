@@ -18,7 +18,6 @@ router.post("/sign-up", async (req, res, next) => {
   try {
     const { id, email, password, passwordCheck, nickname, content } = req.body;
 
-    console.log(id);
     if (!id) {
       return res.status(400).json({ success: false, message: "아이디가 입력되지 않았습니다." });
     }
@@ -162,11 +161,9 @@ router.get("/mail-check", AuthMiddleware, async (req, res) => {
 
       smtpTransport.sendMail(mail, function (error, response) {
         if (error) {
-          console.error("이메일 전송 실패:", error);
           smtpTransport.close();
           return res.status(500).json({ message: "인증 메일 전송에 실패했습니다." });
         } else {
-          console.log("이메일 전송 성공.");
           smtpTransport.close();
         }
       });
@@ -265,7 +262,6 @@ router.get("/sign-in", async (req, res) => {
 //NOTE - 로그인
 router.post("/sign-in", async (req, res) => {
   const { id, password } = req.body;
-  console.log("id, password =>", id, password);
 
   const user = await prisma.users.findFirst({ where: { id } });
 
@@ -303,7 +299,6 @@ router.post("/sign-in", async (req, res) => {
   res.cookie("accessToken", `Bearer ${accessToken}`);
   res.cookie("refreshToken", `Bearer ${refreshToken}`);
 
-  console.log(user);
   return res.status(200).redirect("/");
 });
 
@@ -321,9 +316,7 @@ router.post("/log-out", AuthMiddleware, async (req, res) => {
   });
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
-  console.log("isSuccess => ", isSuccess);
   isSuccess.token === null ? (isSuccess = true) : (isSuccess = false);
-  console.log("isSuccess => ", isSuccess);
 
   return res.status(200).json({ isSuccess });
 });
@@ -414,8 +407,6 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       // 로그인 성공하면 카카오가 토큰을 보내주고, profile에는 카카오가 보내준 유저 정보 담겨있음
       // 가입 이력이 있으면 바로 done, 없으면 그자리에서 회원가입 후 done
-      console.log(accessToken);
-      console.log(profile);
     }
   )
 );

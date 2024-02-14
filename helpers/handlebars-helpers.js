@@ -1,4 +1,3 @@
-console.log("여기 들어옴");
 export default {
   lengthOfList: (list = []) => list.length, // 리스트 길이반환
   eq: (val1, val2) => val1 === val2, // 두 값을 비교해 같은지 여부를 반환

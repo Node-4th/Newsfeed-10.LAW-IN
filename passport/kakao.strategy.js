@@ -18,8 +18,6 @@ export default function () {
       async (accessToken, refreshToken, profile, done) => {
         // 로그인 성공하면 카카오가 토큰을 보내주고, profile에는 카카오가 보내준 유저 정보 담겨있음
         // 가입 이력이 있으면 바로 done, 없으면 그자리에서 회원가입 후 done
-        console.log(accessToken);
-        console.log(profile);
       }
     )
   );
