@@ -7,7 +7,7 @@ const adminDelete = (req, res, next) => {
   const role = req.user.role;
 
   if (!(role === "MANAGER" || role === "OWNER")) {
-    return res.status(403).json({ message: "관리자 삭제 권한이 없습니다." });
+    return res.status(403).json({ success: false, message: "관리자 삭제 권한이 없습니다." });
   }
 
   next();
@@ -16,7 +16,7 @@ const adminDelete = (req, res, next) => {
 router.delete("/admin", AuthMiddleware, adminDelete, async (req, res, next) => {
   const { id } = req.body;
   if (!id) {
-    return res.status(400).json({ message: "아이디가 입력되지 않았습니다." });
+    return res.status(400).json({ success: false, message: "아이디가 입력되지 않았습니다." });
   }
 
   await prisma.users.delete({
@@ -25,7 +25,7 @@ router.delete("/admin", AuthMiddleware, adminDelete, async (req, res, next) => {
     },
   });
 
-  return res.status(200).json({ message: "관리자를 삭제합니다." });
+  return res.status(200).json({ success: true, message: "해당 계정이 삭제되었습니다." });
 });
 
 //NOTE - 관리자로 회원 정보 수정
@@ -39,11 +39,11 @@ router.patch("/admin/userInfo", AuthMiddleware, adminDelete, async (req, res, ne
   });
 
   if (!userId) {
-    return res.status(401).json({ message: "아이디가 존재하지 않습니다." });
+    return res.status(401).json({ success: false, message: "아이디가 존재하지 않습니다." });
   }
 
   if (!(role === "MANAGER" || role === "OWNER")) {
-    return res.status(403).json({ message: "관리자의 권한이 없습니다." });
+    return res.status(403).json({ success: false, message: "관리자의 권한이 없습니다." });
   }
 
   await prisma.users.update({
@@ -54,7 +54,7 @@ router.patch("/admin/userInfo", AuthMiddleware, adminDelete, async (req, res, ne
       role,
     },
   });
-  return res.status(201).json({ message: "상태수정이 완료 되었습니다." });
+  return res.status(201).json({ success: true, message: "상태수정이 완료 되었습니다." });
 });
 
 //NOTE - 관리자로 회원 게시글 삭제
@@ -62,7 +62,7 @@ router.delete("/admin/boards", AuthMiddleware, adminDelete, async (req, res, nex
   const { id } = req.body;
 
   if (!id) {
-    return res.status(400).json({ errorMessage: "게시물이 존재하지 않습니다." });
+    return res.status(400).json({ success: false, errorMessage: "게시물이 존재하지 않습니다." });
   }
 
   const boardId = Number(id);
@@ -80,7 +80,7 @@ router.delete("/admin/boards", AuthMiddleware, adminDelete, async (req, res, nex
   });
   console.log("🚀 ~ router.delete ~ deleteBoard:", deleteBoard);
 
-  return res.status(200).json({ success: "게시글 삭제가 완료 되었습니다.." });
+  return res.status(200).json({ success: true, success: "게시글 삭제가 완료 되었습니다.." });
 });
 
 export default router;

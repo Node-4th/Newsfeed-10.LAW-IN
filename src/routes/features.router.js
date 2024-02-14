@@ -44,7 +44,7 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
       },
     });
     console.log("updatedUser => ", updatedUser);
-    return res.status(400).json({ success: false, message: "좋아요를 취소하였습니다." });
+    return res.status(200).json({ success: true, message: "좋아요를 취소하였습니다." });
   }
 
   await prisma.liked.create({
@@ -155,7 +155,7 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
       console.log("updatedBoard => ", updatedBoard);
     });
 
-    return res.status(400).json({ success: false, message: "추천을 취소 하였습니다" });
+    return res.status(200).json({ success: true, message: "추천을 취소 하였습니다" });
   }
 });
 
