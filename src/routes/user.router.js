@@ -104,7 +104,7 @@ router.post("/sign-up", async (req, res, next) => {
 
     return res
       .status(201)
-      .json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.", createdUser });
+      .json({ success: true, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.", createdUser });
   } catch (err) {
     next(err);
   }
