@@ -1,9 +1,10 @@
 import express from "express";
-import AuthMiddleware from "../middlewares/auth.middleware.js";
 import nodemailer from "nodemailer";
-import { prisma } from "../utils/prisma/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import AuthMiddleware from "../middlewares/auth.middleware.js";
+import { prisma } from "../utils/prisma/index.js";
+
 const router = express.Router();
 
 router.get("/sign-up", (req, res) => {
@@ -99,7 +100,9 @@ router.post("/sign-up", async (req, res, next) => {
       return userInfo;
     });
 
-    return res.status(201).json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요." });
+    return res
+      .status(201)
+      .json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.", createdUser });
   } catch (err) {
     next(err);
   }

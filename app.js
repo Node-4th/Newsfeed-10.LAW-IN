@@ -10,6 +10,7 @@ import CommentRouter from "./src/routes/comment.router.js";
 import FeatureRouter from "./src/routes/features.router.js";
 import AdminRouter from "./src/routes/admin.router.js";
 import handlebarHelper from "./helpers/handlebars-helpers.js";
+import imageUplodeRouter from "./src/routes/imageUplode.router.js";
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ app.use(LogMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use("/api", [UserRouter, BoardRouter, CommentRouter, FeatureRouter, AdminRouter]);
+app.use("/api", [UserRouter, BoardRouter, CommentRouter, FeatureRouter, AdminRouter, imageUplodeRouter]);
 app.use(ErrorHandlingMiddleware);
 
 app.listen(PORT, () => {
