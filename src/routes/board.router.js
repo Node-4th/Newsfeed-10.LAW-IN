@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import imageUploader from "../s3/ImageUploader.js";
 
 const router = express.Router();
 
@@ -190,6 +191,7 @@ router.get("/boards/:id", async (req, res, next) => {
         category: true,
         title: true,
         content: true,
+        media: true,
         status: true,
         recom: true,
         createdAt: true,
@@ -205,6 +207,42 @@ router.get("/boards/:id", async (req, res, next) => {
     console.log("상세게시물 board => ", board);
 
     return res.status(200).render("detail", { board });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/** 게시글 본문 이미지 업로드 API **/
+router.post("/boards/:id/upload-image", imageUploader.single("image"), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const boardId = Number(id);
+    const media = req.file;
+
+    if (!media) {
+      console.log("No file received");
+      return res.status(400).json({
+        success: false,
+        message: "파일이 없습니다.",
+      });
+    }
+
+    // 파일 주소 media에 넣어줌
+    await prisma.boards.update({
+      where: {
+        id: +boardId,
+      },
+      data: {
+        media: media.location,
+      },
+    });
+
+    console.log("file received");
+
+    return res.status(200).json({
+      success: true,
+      message: "파일이 성공적으로 업로드되었습니다.",
+    });
   } catch (error) {
     next(error);
   }
