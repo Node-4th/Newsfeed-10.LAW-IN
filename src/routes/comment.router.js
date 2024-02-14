@@ -28,9 +28,11 @@ router.post("/boards/:boardId/comments", authMiddleware, async (req, res, next) 
       content: content,
     },
   });
-  console.log(comment);
+  comment.id = comment.id.toString;
+  comment.boardId = comment.boardId.toString;
+  comment.like = comment.like.toString;
 
-  return res.status(201).json({ success: true, message: "댓글이 생성되었습니다." });
+  return res.status(201).json({ success: true, comment, message: "댓글이 생성되었습니다." });
 });
 
 // 댓글 조회
@@ -54,8 +56,13 @@ router.get("/boards/:boardId/comments", async (req, res, next) => {
     },
   });
 
-  console.log(comments);
-  return res.status(200).json({ success: true, message: "댓글 조회가 성공적으로 진행되었습니다." });
+  comments.forEach((comment) => {
+    comment.id = comment.id.toString;
+    comment.boardId = comment.boardId.toString;
+    comment.like = comment.like.toString;
+  });
+
+  return res.status(200).json({ success: true, comments, message: "댓글 조회가 성공적으로 진행되었습니다." });
 });
 
 // 댓글 수정
@@ -113,9 +120,11 @@ router.patch("/boards/:boardId/comments/:commentsId", authMiddleware, async (req
       content: content,
     },
   });
+  changeContent.id = changeContent.id.toString;
+  changeContent.boardId = changeContent.boardId.toString;
+  changeContent.like = changeContent.like.toString;
 
-  console.log(changeContent);
-  return res.status(200).json({ success: true, message: "댓글 수정이 완료되었습니다." });
+  return res.status(200).json({ success: true, changeContent, message: "댓글 수정이 완료되었습니다." });
 });
 
 // 댓글 삭제

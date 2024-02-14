@@ -92,10 +92,7 @@ router.get("/boards", async (req, res, next) => {
       },
     });
 
-    console.log("boards1 => ", boards);
     boards = categoryAndStatusCheck(boards);
-
-    console.log("boards => ", boards);
 
     if (!boards.length) {
       return res.status(404).json({ success: false, message: "사건 조회에 실패하였습니다." });
@@ -105,7 +102,6 @@ router.get("/boards", async (req, res, next) => {
       isLogIn: isLogIn,
     };
 
-    console.log("loginData => ", loginData);
     return res.status(200).render("board", { boards, loginData });
   } catch (error) {
     next(error);
@@ -133,8 +129,6 @@ router.get("/boards/follow", authMiddleware, async (req, res, next) => {
       select: { followedId: true },
     });
 
-    console.log("🚀 ~ router.get ~ followedUsers:", followedUsers);
-
     const boards = await prisma.boards.findMany({
       where: {
         userId: followedUsers.followedId,
@@ -158,13 +152,16 @@ router.get("/boards/follow", authMiddleware, async (req, res, next) => {
       },
     });
 
-    console.log("🚀 ~ router.get ~ boards:", boards);
+    boards.forEach((board) => {
+      board.id = board.id.toString;
+      board.recom = board.recom.toString;
+    });
 
     if (!boards.length) {
       return res.status(404).json({ success: false, message: "조회된 사건이 없습니다." });
     }
 
-    return res.status(200).json({ success: true, message: "사건이 성공적으로 조회되었습니다." });
+    return res.status(200).json({ success: true, boards, message: "사건이 성공적으로 조회되었습니다." });
     // 팔로우 로직 추가 후 수정하기
   } catch (error) {
     next(error);
@@ -197,14 +194,11 @@ router.get("/boards/:id", async (req, res, next) => {
         createdAt: true,
       },
     });
-    console.log("🚀 ~ router.get ~ board:", board);
 
     if (!board) {
-      return res.status(404).render({ errorMessage: "사건 조회에 실패하였습니다." });
+      return res.status(404).render({ success: false, errorMessage: "사건 조회에 실패하였습니다." });
     }
-    console.log("데이터 바꾸기 전 board => ", board);
     board = categoryAndStatusCheck(board);
-    console.log("상세게시물 board => ", board);
 
     return res.status(200).render("detail", { board });
   } catch (error) {
@@ -220,7 +214,6 @@ router.post("/boards/:id/upload-image", imageUploader.single("image"), async (re
     const media = req.file;
 
     if (!media) {
-      console.log("No file received");
       return res.status(400).json({
         success: false,
         message: "파일이 없습니다.",
@@ -236,8 +229,6 @@ router.post("/boards/:id/upload-image", imageUploader.single("image"), async (re
         media: media.location,
       },
     });
-
-    console.log("file received");
 
     return res.status(200).json({
       success: true,
@@ -294,10 +285,12 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
         content: content,
       },
     });
-    console.log("🚀 ~ router.patch ~ updateBoard:", updateBoard);
+    updateBoard.id = board.id.toString;
+    updateBoard.recom = board.recom.toString;
 
     return res.status(200).json({
       success: true,
+      updateBoard,
       message: "사건이 성공적으로 수정되었습니다.",
     });
   } catch (error) {
@@ -332,10 +325,12 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
         id: +id,
       },
     });
-    console.log("🚀 ~ router.delete ~ deleteBoard:", deleteBoard);
+    deleteBoard.id = board.id.toString;
+    deleteBoard.recom = board.recom.toString;
 
     return res.status(201).json({
       success: true,
+      deleteBoard,
       message: "사건이 성공적으로 삭제되었습니다.",
     });
   } catch (error) {
@@ -346,7 +341,6 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
 export default router;
 
 function categoryAndStatusCheck(boards) {
-  console.log("여기 들어오기는함");
   const categoryMap = {
     Unspecified: "미지정",
     Fraud: "사기",
@@ -361,32 +355,24 @@ function categoryAndStatusCheck(boards) {
     Solved: "해결완료",
     Incomplete: "미완료",
   };
-  console.log("여기 들어오기는함2");
   let newCategory = "";
   let newStatus = "";
-  console.log("여기 들어오기는함3");
 
   if (typeof boards === "object" && Object.keys(boards).length > 0 && !Array.isArray(boards)) {
     boards.category = categoryMap[boards.category];
     boards.status = statusMap[boards.status];
-    console.log(boards.category, boards.status);
   }
 
   for (let i = 0; i < boards.length; i++) {
     const category = boards[i].category;
     const status = boards[i].status;
-    console.log(category);
-    console.log(status);
 
     newCategory = categoryMap[category] || category;
     newStatus = statusMap[status] || status;
 
     boards[i].category = newCategory;
     boards[i].status = newStatus;
-    console.log(boards[i].category);
-    console.log(boards[i].status);
   }
-  console.log("여기 들어오기는함4");
 
   return boards;
 }

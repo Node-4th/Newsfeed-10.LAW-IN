@@ -16,8 +16,6 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
     },
   });
 
-  console.log("isExistLike => ", isExistLike);
-
   if (isExistLike) {
     await prisma.liked.delete({
       where: {
@@ -33,7 +31,6 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
         likedCommentId: commentsId,
       },
     });
-    console.log("count => ", count);
 
     const updatedUser = await prisma.comments.update({
       where: {
@@ -43,8 +40,7 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
         like: BigInt(count),
       },
     });
-    console.log("updatedUser => ", updatedUser);
-    return res.status(400).json({ success: false, message: "좋아요를 취소하였습니다." });
+    return res.status(200).json({ success: true, message: "좋아요를 취소하였습니다." });
   }
 
   await prisma.liked.create({
@@ -54,14 +50,11 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
     },
   });
 
-  console.log("생성완료");
-
   const count = await prisma.liked.count({
     where: {
       likedCommentId: commentsId,
     },
   });
-  console.log("count => ", count);
 
   const updatedUser = await prisma.comments.update({
     where: {
@@ -71,8 +64,6 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
       like: BigInt(count),
     },
   });
-
-  console.log("updatedUser => ", updatedUser);
 
   return res.status(201).json({ success: true, message: "좋아요가 추가 되었습니다." });
 });
@@ -90,8 +81,6 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
     },
   });
 
-  console.log("isExistrecom => ", isExistrecom);
-
   if (!isExistrecom) {
     await prisma.$transaction(async (tx) => {
       await tx.recom.create({
@@ -101,14 +90,11 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
         },
       });
 
-      console.log("생성완료");
-
       const count = await tx.recom.count({
         where: {
           recomedBoardId: boardId,
         },
       });
-      console.log("count => ", count);
 
       const updatedBoard = await tx.boards.update({
         where: {
@@ -118,8 +104,6 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
           recom: BigInt(count),
         },
       });
-
-      console.log("updatedBoard => ", updatedBoard);
     });
 
     return res.status(201).json({ success: true, message: "추천 되었습니다." });
@@ -134,14 +118,11 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
         },
       });
 
-      console.log("삭제완료");
-
       const count = await tx.recom.count({
         where: {
           recomedBoardId: boardId,
         },
       });
-      console.log("count => ", count);
 
       const updatedBoard = await tx.boards.update({
         where: {
@@ -151,11 +132,9 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
           recom: BigInt(count),
         },
       });
-
-      console.log("updatedBoard => ", updatedBoard);
     });
 
-    return res.status(400).json({ success: false, message: "추천을 취소 하였습니다" });
+    return res.status(200).json({ success: true, message: "추천을 취소 하였습니다" });
   }
 });
 
@@ -203,8 +182,6 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
       },
     });
 
-    console.log(count);
-
     await prisma.users.update({
       where: {
         id: followedId,
@@ -230,8 +207,6 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
         followedId: followedId,
       },
     });
-
-    console.log(count);
 
     await prisma.users.update({
       where: {
