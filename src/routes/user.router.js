@@ -17,32 +17,37 @@ router.post("/sign-up", async (req, res, next) => {
 
     console.log(id);
     if (!id) {
-      return res.status(400).json({ message: "아이디가 입력되지 않았습니다." });
+      return res.status(400).json({ success: false, message: "아이디가 입력되지 않았습니다." });
+    }
+    if (id == password) {
+      return res.status(400).json({ success: false, message: "아이디와 비밀번호는 같을 수 없습니다." });
     }
     if (!email) {
-      return res.status(400).json({ message: "이메일이 입력되지 않았습니다." });
+      return res.status(400).json({ success: false, message: "이메일이 입력되지 않았습니다." });
     }
     if (!password) {
-      return res.status(400).json({ message: "비밀번호가 입력되지 않았습니다." });
+      return res.status(400).json({ success: false, message: "비밀번호가 입력되지 않았습니다." });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
+        success: false,
         message: "비밀번호는 6자 이상이어야 합니다.",
       });
     }
 
     if (!passwordCheck) {
-      return res.status(400).json({ message: "비밀번호를 다시 한 번 입력해주세요." });
+      return res.status(400).json({ success: false, message: "비밀번호를 다시 한 번 입력해주세요." });
     }
     if (password !== passwordCheck) {
       return res.status(400).json({
+        success: false,
         message: "비밀번호가 일치하지 않습니다.",
       });
     }
 
     if (!nickname) {
-      return res.status(400).json({ message: "별명이 입력되지 않았습니다." });
+      return res.status(400).json({ success: false, message: "별명이 입력되지 않았습니다." });
     }
 
     const isExistUser = await prisma.users.findFirst({
@@ -58,10 +63,10 @@ router.post("/sign-up", async (req, res, next) => {
     });
 
     if (isExistUser) {
-      return res.status(409).json({ message: "이미 존재하는 아이디입니다." });
+      return res.status(409).json({ success: false, message: "이미 존재하는 아이디입니다." });
     }
     if (isExistEmail) {
-      return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
+      return res.status(409).json({ success: false, message: "이미 존재하는 이메일입니다." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -231,10 +236,10 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: "해당 ID로 사용자를 찾을 수 없습니다.",
+      message: "사용자가 존재하지 않습니다",
     });
   } else if (!(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    return res.status(400).json({ success: false, message: "비밀번호가 일치하지 않습니다." });
   }
 
   // 사용자를 삭제합니다.
@@ -244,7 +249,7 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
     },
   });
 
-  return res.status(200).json({ success: true, message: "사용자가 성공적으로 삭제되었습니다." });
+  return res.status(201).json({ success: true, message: "회원 탈퇴가 완료되었습니다." });
 });
 
 //NOTE - 로그인 페이지 이동
@@ -262,7 +267,7 @@ router.post("/sign-in", async (req, res) => {
   if (!user) {
     return res.status(401).json({ message: "존재하지 않는 유저 입니다." });
   } else if (!(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    return res.status(401).json({ success: false, message: "비밀번호가 일치하지 않습니다." });
   }
 
   const accessToken = jwt.sign(
@@ -351,15 +356,16 @@ router.patch("/myInfo", AuthMiddleware, async (req, res) => {
   const user = await prisma.users.findFirst({ where: { id } });
 
   if (password !== passwordCheck || password.length < 6) {
-    return res.status(400).json({
+    return res.status(401).json({
+      success: false,
       message: "비밀번호의 길이가 짧거나 두 비밀번호가 일치하지 않습니다.",
     });
   }
 
   if (!user) {
-    return res.status(401).json({ message: "아이디가 존재하지 않습니다" });
+    return res.status(401).json({ success: false, message: "아이디가 존재하지 않습니다" });
   } else if (!(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    return res.status(401).json({ success: false, message: "비밀번호가 일치하지 않습니다." });
   }
 
   const updateUser = await prisma.$transaction(async (tx) => {
@@ -388,7 +394,7 @@ router.patch("/myInfo", AuthMiddleware, async (req, res) => {
     });
     return userInfo;
   });
-  return res.status(201).json({ success: "내정보 수정에 성공하였습니다." });
+  return res.status(201).json({ success: true, message: "회원 정보가 수정되었습니다.", userInfo: updateUser });
 });
 
 export default router;
