@@ -11,7 +11,7 @@
     "aws-sdk": "^2.1557.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
-    "dotenv": "^16.4.1",
+    "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "express-handlebars": "^7.1.2",
     "jsonwebtoken": "^9.0.2",
