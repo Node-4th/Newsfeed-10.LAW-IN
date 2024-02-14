@@ -35,6 +35,7 @@ const imageUploader = multer({
       // query에 디렉토리 값이 있으면 그 값을 받고없으면 디폴트 경로에 추가
     },
     acl: "public-read-write", //  s3 생성할 때 설정했던 권한 관련 설정
+    contentType: multerS3.AUTO_CONTENT_TYPE,
   }),
 });
 
