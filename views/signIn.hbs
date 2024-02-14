@@ -1,0 +1,28 @@
+<div class="loginContainer" style="width: 700px">
+  <h2 style="text-align: center">{{ title }}</h2>
+  <form action="/api/sign-in" method="post">
+    <table style="margin: 0 auto">
+      <tr>
+        <td>ID :</td>
+        <td>
+          <input type="text" name="id" id="id" placeholder="아이디" />
+        </td>
+      </tr>
+      <tr>
+        <td>PW :</td>
+        <td>
+          <input type="password" name="password" id="password" placeholder="패스워드" />
+        </td>
+      </tr>
+    </table>
+    <div style="text-align: right">
+      <button>
+        <a style="font-size: 14px; border:none" href="/api/sign-up">
+          회원가입
+        </a>
+      </button>
+      <button type="submit">로그인</button>
+    </div>
+  </form>
+</div>
+<a>;<a>

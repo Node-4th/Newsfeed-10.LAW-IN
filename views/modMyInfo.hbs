@@ -1,0 +1,27 @@
+<div class="modMyInfoContainer" style="width: 500px">
+    <h2>{{title}}</h2>
+    {{#with user}}
+    <div>아이디 : {{id}}</div>
+    <div>이메일 : {{email}}</div>
+    <div>내권한 : {{role}}</div>
+    <div>팔로우 : {{follow}}</div>
+    <form action="">
+        <div>
+            닉네임 : <input type="text" id="nickname" name="nickname" value="{{nickname}}">
+        </div>
+        <div>
+            내소개 : <input type="text" id="content" name="content" value="{{content}}">
+        </div>
+        {{/with}}
+        <div>
+            비밀 번호: <input type="password" id="password" name="password">
+        </div>
+        <div>
+            비밀 번호 확인 : <input type="password" id="passwordCheck" name="passwordCheck">
+        </div>
+
+        <div style="text-align: right;">
+            <button type="button" id="modBtn">수정등록</button>
+        </div>
+    </form>
+</div>

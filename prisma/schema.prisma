@@ -18,7 +18,7 @@ model Users {
   token        String?    @map("token") @db.Text
   isEmailValid Boolean    @default(false) @map("isEmailValid")
 
-  board             Boards[]
+  board             Boards[] // 1:n
   comments          Comments[]
   followedIdTousers Follows[]  @relation("followedIdTousers")
   followerIdTousers Follows[]  @relation("followerIdTousers")
@@ -67,6 +67,7 @@ model Follows {
   followerId String
   followedId String
 
+  //n:n
   followedIdTousers Users @relation("followedIdTousers", fields: [followedId], references: [id], map: "followedId_fkey")
   followerIdTousers Users @relation("followerIdTousers", fields: [followerId], references: [id], map: "followerId_fkey")
 

@@ -20,9 +20,6 @@ router.post("/boards/:boardId/comments", authMiddleware, async (req, res, next) 
   if (!content) {
     return res.status(400).json({ errorMessage: "작성된 내용이 존재하지 않습니다." });
   }
-  if (!id) {
-    return res.status(400).json({ errorMessage: "유저가 존재하지 않습니다." });
-  }
 
   const comment = await prisma.comments.create({
     data: {
@@ -67,12 +64,6 @@ router.patch("/boards/:boardId/comments/:commentsId", authMiddleware, async (req
   const commentsId = req.params.commentsId;
   const { id } = req.user;
   const { content } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      errorMessage: "유저가 존재하지 않습니다.",
-    });
-  }
 
   const board = await prisma.comments.findFirst({
     where: {
@@ -128,12 +119,6 @@ router.delete("/boards/:boardId/comments/:commentsId", authMiddleware, async (re
   const boardId = req.params.boardId;
   const commentsId = req.params.commentsId;
   const { id } = req.user;
-
-  if (!id) {
-    return res.status(400).json({
-      errorMessage: "유저가 존재하지 않습니다.",
-    });
-  }
 
   const board = await prisma.comments.findFirst({
     where: {

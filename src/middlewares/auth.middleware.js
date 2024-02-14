@@ -19,6 +19,7 @@ export default async function (req, res, next) {
       },
     });
 
+    // access토큰이 없을때
     if (isExistToken && !accessToken) {
       const decodedToken = jwt.verify(refresh, process.env.JWT_SECRET_KEY);
       const email = decodedToken.email;

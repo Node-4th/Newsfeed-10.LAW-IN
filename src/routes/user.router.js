@@ -6,11 +6,16 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 const router = express.Router();
 
+router.get("/sign-up", (req, res) => {
+  return res.render("signUp", { title: "회원가입" });
+});
+
 //NOTE - 회원가입
 router.post("/sign-up", async (req, res, next) => {
   try {
     const { id, email, password, passwordCheck, nickname, content } = req.body;
 
+    console.log(id);
     if (!id) {
       return res.status(400).json({ message: "아이디가 입력되지 않았습니다." });
     }
@@ -86,12 +91,10 @@ router.post("/sign-up", async (req, res, next) => {
         },
       });
 
-      userInfo.follow = userInfo.follow.toString();
-
       return userInfo;
     });
 
-    return res.status(201).json({ userInfo: createdUser });
+    return res.status(201).json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요." });
   } catch (err) {
     next(err);
   }
@@ -208,9 +211,17 @@ router.post("/mail-check", AuthMiddleware, async (req, res) => {
 router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   const { id } = req.user;
   const { password } = req.body;
-  if (!id) {
-    return res.status(400).json({ success: false, message: "사용자를 찾을 수 없습니다." });
+
+  if (!password) {
+    return res.status(400).json({ message: "비밀번호가 입력되지 않았습니다." });
   }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      message: "비밀번호는 6자 이상이어야 합니다.",
+    });
+  }
+
   const user = await prisma.users.findFirst({
     where: {
       id,
@@ -236,15 +247,20 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   return res.status(200).json({ success: true, message: "사용자가 성공적으로 삭제되었습니다." });
 });
 
+//NOTE - 로그인 페이지 이동
+router.get("/sign-in", async (req, res) => {
+  return res.render("signIn", { title: "Log-in" });
+});
+
 //NOTE - 로그인
 router.post("/sign-in", async (req, res) => {
   const { id, password } = req.body;
+  console.log("id, password =>", id, password);
 
   const user = await prisma.users.findFirst({ where: { id } });
-  console.log(await bcrypt.compare(password, user.password));
 
   if (!user) {
-    return res.status(401).json({ message: "존재하지 않는 이메일 입니다." });
+    return res.status(401).json({ message: "존재하지 않는 유저 입니다." });
   } else if (!(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
@@ -277,17 +293,15 @@ router.post("/sign-in", async (req, res) => {
   res.cookie("accessToken", `Bearer ${accessToken}`);
   res.cookie("refreshToken", `Bearer ${refreshToken}`);
 
-  return res.status(200).json({ message: "로그인에 성공하였습니다." });
+  console.log(user);
+  return res.status(200).redirect("/");
 });
 
 //NOTE - 로그아웃
 router.post("/log-out", AuthMiddleware, async (req, res) => {
-  const { id, token } = req.user;
-  if (!token) {
-    return res.status(400).json({ success: false, message: "토큰이 존재하지 않습니다." });
-  }
+  const { id } = req.user;
 
-  await prisma.users.update({
+  let isSuccess = await prisma.users.update({
     where: {
       id,
     },
@@ -297,8 +311,11 @@ router.post("/log-out", AuthMiddleware, async (req, res) => {
   });
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
+  console.log("isSuccess => ", isSuccess);
+  isSuccess.token === null ? (isSuccess = true) : (isSuccess = false);
+  console.log("isSuccess => ", isSuccess);
 
-  return res.status(200).json({ success: true, message: "로그아웃이 성공적으로 완료 되었습니다." });
+  return res.status(200).json({ isSuccess });
 });
 
 //NOTE - 내정보 조회
@@ -317,9 +334,13 @@ router.get("/myInfo", AuthMiddleware, async (req, res) => {
     },
   });
 
-  user.follow = user.follow.toString();
+  return res.status(200).render("myInfo", { title: "내정보", user });
+});
 
-  return res.status(200).json({ data: user });
+router.get("/modmyInfo", AuthMiddleware, async (req, res) => {
+  const { id } = req.user;
+  const user = await prisma.users.findFirst({ where: { id } });
+  return res.render("modMyInfo", { title: "내정보 수정", user });
 });
 
 //NOTE - 내정보 수정
@@ -365,11 +386,9 @@ router.patch("/myInfo", AuthMiddleware, async (req, res) => {
         follow: true,
       },
     });
-
-    userInfo.follow = user.follow.toString();
     return userInfo;
   });
-  return res.status(201).json({ success: "이력서 수정에 성공하였습니다.", userInfo: updateUser });
+  return res.status(201).json({ success: "내정보 수정에 성공하였습니다." });
 });
 
 export default router;
