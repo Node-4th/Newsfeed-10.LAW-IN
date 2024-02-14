@@ -1,0 +1,78 @@
+    <nav>
+      {{#if loginData.isLogIn}}
+      <button type="button" id="logOut">로그아웃</button>
+      <button type="button"><a style="border: none;" href="/api/myInfo">마이페이지</a></button>
+      {{else}}
+      <a href="/api/sign-in">로그인</a>
+      <a href="/api/sign-up">회원가입</a>
+      {{/if}}
+    </nav>
+    {{!-- <!-- 검색어 영역 -->
+    <input
+      type="text"
+      name="search"
+      id="search"
+      value=""
+      size="50"
+      placeholder="검색어를 입력하세요"
+    />
+    <!-- 버튼 클릭시 search변수에 검색어 데이터를 담아서 서버로 보냄. -->
+    <button
+      onclick="location.href = `/?search=${document.getElementById('search').value}`"
+    >
+      검색
+    </button> --}}
+    <br />
+    <section class="boardSection">
+      <h2 style="margin: 20px">게시판</h2>
+      <table>
+        <tr>
+          <th>제목</th>
+          <th>작성자</th>
+          <th>사용자 권한</th>
+          <th>카테고리</th>
+          <th>사건상태</th>
+          <th>추천수</th>
+          <th>작성일</th>
+        </tr>
+        
+        {{#each boards}}
+        <tr>
+          <td><a style="border: none;" href="/api/boards/{{id}}">{{title}}</a></td>
+          <td>{{users.nickname}}</td>
+          <td>{{users.role}}</td>
+          <td>{{category}}</td>
+          <td>{{status}}</td>
+          <td>{{recom}}</td>
+          <td>{{dateString createdAt}}</td>
+        </tr>
+        {{/each}}
+
+      </table>
+    </section>
+
+<script>
+  const postOption ={
+    method:'post', 
+    headers:{'Content-Type':'application/json'} 
+  }
+
+  document.querySelector("#logOut").addEventListener('click',(e)=>{
+    e.preventDefault();
+
+  fetch("/api/log-out", postOption)
+    .then(response => {
+      if (response.ok) {
+        window.location = '/api/boards';
+      } else {
+        throw new Error('로그아웃에 실패하였습니다.');
+      }
+    })
+    .catch(error => {
+      alert(error.message);
+    });
+
+  })
+
+
+</script>

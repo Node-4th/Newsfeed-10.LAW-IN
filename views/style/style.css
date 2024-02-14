@@ -1,0 +1,123 @@
+ .mainTitle{
+    margin: 0 auto;
+    width: 200px;
+    text-align: center;
+ }
+
+ nav {
+    text-align: right;
+    margin-bottom: 20px;
+  }
+
+  #search {
+    height: 20px;
+    font-size: 16px;
+  }
+
+  .boardSection {
+    margin: 0 auto;
+    border: 1px solid black;
+    margin-top: 20px;
+  }
+
+  .boardSection table {
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+    border-collapse: separate;
+    border-spacing: 10px;
+  }
+
+  a {
+    text-decoration: none;
+    color: black;
+    border: 1px solid black;
+  }
+
+  .boardSection table tr td {
+    padding: 20px;
+  }
+
+  .boardSection table tr th {
+    border-top: 1px solid rgb(255 75 75);
+    font-weight: 600;
+    font-size: large;
+  }
+
+  .boardfootDiv {
+    text-align: right;
+    margin: 20px;
+  }
+
+  .boardfootDiv div {
+    text-align: center;
+  }
+
+  .boardfootDiv div a {
+    border: none;
+  }
+
+  .loginContainer {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 0 auto;
+    font-size: 20px;
+    margin-top: 100px;
+  }
+
+  .signUpContainer {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 0 auto;
+    font-size: 20px;
+  }
+
+  .signUpContainer form {
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  .signUpContainer form input {
+    width: 300px;
+    font-size: 16px;
+    height: 20px;
+  }
+
+  .signUpBtn {
+    text-align: right;
+    margin-right: 27px;
+  }
+
+  .detailContainer,
+  .myInfoContainer,
+  .modMyInfoContainer {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 0 auto;
+  }
+
+  .detailFlexDiv div {
+    margin-left: 5px;
+  }
+
+  .detailListDiv {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+  }
+
+  .detailFooter {
+    text-align: right;
+  }
+
+  .detailFooter a {
+    text-decoration: none;
+    color: rgb(236, 36, 36);
+  }
+
+  .myInfoContainer div,
+  .modMyInfoContainer div,
+  .modMyInfoContainer div input{
+    font-size: 20px;
+    margin-top: 10px;
+  }
