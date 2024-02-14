@@ -8,122 +8,113 @@ datasource db {
 }
 
 model Users {
-  id         String      @id            @map("id")
-  email      String      @unique        @map("email")         
-  password   String                     @map("password")                 
-  nickname   String                     @map("nickname")
-  content    String?                    @map("content")
-  role       users_role  @default(USER) @map("role")
-  follow     BigInt      @default(0)    @map("follow")
-  token      String?     @db.Text       @map("token")
+  id           String     @id @map("id")
+  email        String     @unique @map("email")
+  password     String     @map("password")
+  nickname     String     @map("nickname")
+  content      String?    @map("content")
+  role         users_role @default(USER) @map("role")
+  follow       BigInt     @default(0) @map("follow")
+  token        String?    @map("token") @db.Text
+  isEmailValid Boolean    @default(false) @map("isEmailValid")
 
-  
   board             Boards[]
   comments          Comments[]
-  followedIdTousers Follows[]   @relation("followedIdTousers")
-  followerIdTousers Follows[]   @relation("followerIdTousers")
+  followedIdTousers Follows[]  @relation("followedIdTousers")
+  followerIdTousers Follows[]  @relation("followerIdTousers")
   recom             Recom[]
   liked             Liked[]
 
   @@map("Users")
 }
 
-
 model Boards {
   id        BigInt       @id @default(autoincrement()) @map("id")
-  userId    String                                     @map("userId")
-  title     String                                     @map("title")
-  content   String                                     @map("content")
-  status    board_status     @default(Notset)          @map("status")
-  category  Category         @default(Unspecified)     @map("category")
-  recom     BigInt           @default(0)               @map("recom")
-  createdAt DateTime         @default(now())           @map("createdAt")
-  updateAt  DateTime         @updatedAt                @map("updateAt")
-  media     String?                                    @map("media")
+  userId    String       @map("userId")
+  title     String       @map("title")
+  content   String       @map("content")
+  status    board_status @default(Notset) @map("status")
+  category  Category     @default(Unspecified) @map("category")
+  recom     BigInt       @default(0) @map("recom")
+  createdAt DateTime     @default(now()) @map("createdAt")
+  updateAt  DateTime     @updatedAt @map("updateAt")
+  media     String?      @map("media")
 
-  comments  Comments[]
-  recoms    Recom[]
+  comments Comments[]
+  recoms   Recom[]
 
-  users     Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  users Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("Boards")
 }
 
-
 model Comments {
-  id        BigInt   @id @default(autoincrement())  @map("id")
-  userId    String                                  @map("userId")
-  boardId   BigInt                                  @map("boardId")
-  content   String                                  @map("content")
-  createdAt DateTime     @default(now())            @map("createdAt")
-  like      BigInt       @default(0)
+  id        BigInt   @id @default(autoincrement()) @map("id")
+  userId    String   @map("userId")
+  boardId   BigInt   @map("boardId")
+  content   String   @map("content")
+  createdAt DateTime @default(now()) @map("createdAt")
+  like      BigInt   @default(0)
 
-  boards    Boards   @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  users     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  liked     Liked[]
+  boards Boards  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  users  Users   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  liked  Liked[]
 
   @@map("Comments")
 }
 
-
 model Follows {
-  followerId        String
-  followedId        String
+  followerId String
+  followedId String
 
-  followedIdTousers Users  @relation("followedIdTousers", fields: [followedId], references: [id], map: "followedId_fkey")
-  followerIdTousers Users  @relation("followerIdTousers", fields: [followerId], references: [id], map: "followerId_fkey")
+  followedIdTousers Users @relation("followedIdTousers", fields: [followedId], references: [id], map: "followedId_fkey")
+  followerIdTousers Users @relation("followerIdTousers", fields: [followerId], references: [id], map: "followerId_fkey")
 
   @@id([followerId, followedId])
   @@map("Follows")
 }
 
-
 model Recom {
   userId         String
   recomedBoardId BigInt
 
-  board   Boards  @relation(fields: [recomedBoardId], references: [id], onDelete: Cascade )
-  users   Users   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board Boards @relation(fields: [recomedBoardId], references: [id], onDelete: Cascade)
+  users Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([userId,recomedBoardId])
+  @@id([userId, recomedBoardId])
   @@map("Recom")
 }
 
-
-model Liked{
-  userId String
+model Liked {
+  userId         String
   likedCommentId BigInt
 
-  users   Users  @relation(fields: [userId], references: [id], onDelete: Cascade, map: "like_userId_fkey")
+  users    Users    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "like_userId_fkey")
   comments Comments @relation(fields: [likedCommentId], references: [id], onDelete: Cascade)
 
   @@id([userId, likedCommentId])
   @@map("liked")
 }
 
-
-
 enum users_role {
-  USER       // 일반인
-  LAWYER     // 변호사
-  MANAGER    // 매니저
-  OWNER      // 관리자
+  USER // 일반인
+  LAWYER // 변호사
+  MANAGER // 매니저
+  OWNER // 관리자
 }
 
 enum Category {
-  Unspecified      // 미지정
-  Fraud            // 사기
-  Affair           // 불륜
-  TrafficAccident  // 교통사고
-  Theft            // 도난
-  Violence         // 폭행
+  Unspecified // 미지정
+  Fraud // 사기
+  Affair // 불륜
+  TrafficAccident // 교통사고
+  Theft // 도난
+  Violence // 폭행
 }
 
 enum board_status {
-  Notset     // 미설정
+  Notset // 미설정
   Proceeding // 진행중
-  Solved     // 해결완료
+  Solved // 해결완료
   Incomplete // 미완료
 }
-
-

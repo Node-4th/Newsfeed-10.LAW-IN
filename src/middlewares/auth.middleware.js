@@ -54,6 +54,12 @@ export default async function (req, res, next) {
       res.clearCookie("accessToken");
       throw new Error("토큰 사용자가 존재하지 않습니다.");
     }
+
+    // // 이메일 인증 확인
+    // if (!user.isValidMail) {
+    //   throw new Error("이메일 인증 후 이용해주세요.");
+    // }
+
     req.user = user;
     next();
   } catch (error) {
@@ -61,13 +67,13 @@ export default async function (req, res, next) {
     res.clearCookie("accessToken");
     switch (error.name) {
       case "TokenExpiredError":
-        return res.status(401).json({ message: "토큰이 만료되었습니다. 다시 로그인 해주세요" });
+        return res.status(401).json({ success: false, message: "토큰이 만료되었습니다. 다시 로그인 해주세요" });
 
       case "JsonWebTokenError":
-        return res.status(401).json({ message: "토큰이 조작되었습니다." });
+        return res.status(401).json({ success: false, message: "토큰이 조작되었습니다." });
 
       default:
-        return res.status(401).json({ message: error.message ?? "비정상적인 요청입니다." });
+        return res.status(401).json({ success: false, message: error.message ?? "비정상적인 요청입니다." });
     }
   }
 }

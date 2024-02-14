@@ -15,13 +15,13 @@ router.post("/boards/:boardId/comments", authMiddleware, async (req, res, next) 
   });
 
   if (!board) {
-    return res.status(404).json({ errorMessage: "사건이 존재하지 않습니다." });
+    return res.status(404).json({ success: false, message: "사건이 존재하지 않습니다." });
   }
   if (!content) {
-    return res.status(400).json({ errorMessage: "작성된 내용이 존재하지 않습니다." });
+    return res.status(400).json({ success: false, message: "작성된 내용이 존재하지 않습니다." });
   }
   if (!id) {
-    return res.status(400).json({ errorMessage: "유저가 존재하지 않습니다." });
+    return res.status(404).json({ success: false, message: "유저가 존재하지 않습니다." });
   }
 
   const comment = await prisma.comments.create({
@@ -33,7 +33,7 @@ router.post("/boards/:boardId/comments", authMiddleware, async (req, res, next) 
   });
   console.log(comment);
 
-  return res.status(201).json({ success: "댓글이 생성되었습니다." });
+  return res.status(201).json({ success: true, message: "댓글이 생성되었습니다." });
 });
 
 // 댓글 조회
@@ -58,7 +58,7 @@ router.get("/boards/:boardId/comments", async (req, res, next) => {
   });
 
   console.log(comments);
-  return res.status(200).json({ success: "댓글 조회가 성공적으로 진행되었습니다." });
+  return res.status(200).json({ success: true, message: "댓글 조회가 성공적으로 진행되었습니다." });
 });
 
 // 댓글 수정
@@ -69,8 +69,9 @@ router.patch("/boards/:boardId/comments/:commentsId", authMiddleware, async (req
   const { content } = req.body;
 
   if (!id) {
-    return res.status(400).json({
-      errorMessage: "유저가 존재하지 않습니다.",
+    return res.status(404).json({
+      success: false,
+      message: "유저가 존재하지 않습니다.",
     });
   }
 
@@ -81,14 +82,16 @@ router.patch("/boards/:boardId/comments/:commentsId", authMiddleware, async (req
   });
 
   if (!board) {
-    return res.status(400).json({
-      errorMessage: "게시물이 존재하지 않습니다.",
+    return res.status(404).json({
+      success: false,
+      message: "게시물이 존재하지 않습니다.",
     });
   }
 
   if (!content) {
     return res.status(400).json({
-      errorMessage: "수정할 내용을 입력해주세요.",
+      success: false,
+      message: "수정할 내용을 입력해주세요.",
     });
   }
 
@@ -99,14 +102,16 @@ router.patch("/boards/:boardId/comments/:commentsId", authMiddleware, async (req
   });
 
   if (!comment) {
-    return res.status(400).json({
-      errorMessage: "댓글이 존재하지 않습니다.",
+    return res.status(404).json({
+      success: false,
+      message: "댓글이 존재하지 않습니다.",
     });
   }
 
   if (comment.userId !== id) {
-    return res.status(400).json({
-      errorMessage: "본인이 작성한 댓글이 아닙니다.",
+    return res.status(401).json({
+      success: false,
+      message: "본인이 작성한 댓글이 아닙니다.",
     });
   }
 
@@ -120,7 +125,7 @@ router.patch("/boards/:boardId/comments/:commentsId", authMiddleware, async (req
   });
 
   console.log(changeContent);
-  return res.status(201).json({ success: "댓글 수정이 완료되었습니다." });
+  return res.status(200).json({ success: true, message: "댓글 수정이 완료되었습니다." });
 });
 
 // 댓글 삭제
@@ -130,8 +135,9 @@ router.delete("/boards/:boardId/comments/:commentsId", authMiddleware, async (re
   const { id } = req.user;
 
   if (!id) {
-    return res.status(400).json({
-      errorMessage: "유저가 존재하지 않습니다.",
+    return res.status(404).json({
+      success: false,
+      message: "유저가 존재하지 않습니다.",
     });
   }
 
@@ -142,8 +148,9 @@ router.delete("/boards/:boardId/comments/:commentsId", authMiddleware, async (re
   });
 
   if (!board) {
-    return res.status(400).json({
-      errorMessage: "게시물이 존재하지 않습니다.",
+    return res.status(404).json({
+      success: false,
+      message: "게시물이 존재하지 않습니다.",
     });
   }
 
@@ -154,14 +161,16 @@ router.delete("/boards/:boardId/comments/:commentsId", authMiddleware, async (re
   });
 
   if (!comment) {
-    return res.status(400).json({
-      errorMessage: "댓글이 존재하지 않습니다.",
+    return res.status(404).json({
+      success: false,
+      message: "댓글이 존재하지 않습니다.",
     });
   }
 
   if (comment.userId !== id) {
-    return res.status(400).json({
-      errorMessage: "본인이 작성한 댓글이 아닙니다.",
+    return res.status(401).json({
+      success: false,
+      message: "본인이 작성한 댓글이 아닙니다.",
     });
   }
 
@@ -171,7 +180,7 @@ router.delete("/boards/:boardId/comments/:commentsId", authMiddleware, async (re
     },
   });
 
-  return res.status(201).json({ success: "댓글 삭제가 완료되었습니다." });
+  return res.status(200).json({ success: true, message: "댓글 삭제가 완료되었습니다." });
 });
 
 export default router;

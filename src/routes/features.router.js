@@ -44,7 +44,7 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
       },
     });
     console.log("updatedUser => ", updatedUser);
-    return res.status(400).json({ errorMessage: "좋아요를 취소하였습니다." });
+    return res.status(400).json({ success: false, message: "좋아요를 취소하였습니다." });
   }
 
   await prisma.liked.create({
@@ -74,7 +74,7 @@ router.post("/boards/:boardId/comments/:commentsId/likes", AuthMiddleware, async
 
   console.log("updatedUser => ", updatedUser);
 
-  return res.status(201).json({ message: "좋아요가 추가 되었습니다." });
+  return res.status(201).json({ success: true, message: "좋아요가 추가 되었습니다." });
 });
 
 // 게시물 추천
@@ -122,7 +122,7 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
       console.log("updatedBoard => ", updatedBoard);
     });
 
-    return res.status(201).json({ message: "추천 되었습니다." });
+    return res.status(201).json({ success: true, message: "추천 되었습니다." });
   } else {
     await prisma.$transaction(async (tx) => {
       await tx.recom.delete({
@@ -155,7 +155,7 @@ router.post("/boards/:boardId/recommend", AuthMiddleware, async (req, res) => {
       console.log("updatedBoard => ", updatedBoard);
     });
 
-    return res.status(400).json({ errorMessage: "추천을 취소 하였습니다" });
+    return res.status(400).json({ success: false, message: "추천을 취소 하였습니다" });
   }
 });
 
@@ -165,7 +165,7 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
   const { followedId } = req.body;
 
   if (!followedId) {
-    return res.status(400).json({ errorMessage: "팔로우하려는 유저의 ID를 작성해주세요" });
+    return res.status(400).json({ success: false, message: "팔로우하려는 유저의 ID를 작성해주세요" });
   }
 
   const user = await prisma.users.findFirst({
@@ -175,11 +175,11 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
   });
 
   if (!user) {
-    return res.status(404).json({ message: "팔로우하려는 유저가 없습니다." });
+    return res.status(404).json({ success: false, message: "팔로우하려는 유저가 없습니다." });
   }
 
   if (id === user.id) {
-    return res.status(404).json({ message: "유저는 유저 자신을 팔로우 할 수 없습니다." });
+    return res.status(404).json({ success: false, message: "유저는 유저 자신을 팔로우 할 수 없습니다." });
   }
 
   const follow = await prisma.follows.findFirst({
@@ -214,7 +214,7 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
       },
     });
 
-    return res.status(200).json({ message: "팔로우 하였습니다." });
+    return res.status(200).json({ success: true, message: "팔로우 하였습니다." });
   } else {
     await prisma.follows.delete({
       where: {
@@ -242,7 +242,7 @@ router.post("/follow", AuthMiddleware, async (req, res) => {
       },
     });
 
-    return res.status(200).json({ message: "팔로우 취소하였습니다." });
+    return res.status(200).json({ success: true, message: "팔로우 취소하였습니다." });
   }
 });
 export default router;
