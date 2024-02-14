@@ -1,0 +1,72 @@
+<div class="detailContainer" style="width: 1000px">
+    <div style="display: flex; justify-content: space-between">
+        {{#with board}}
+        <h2>제목 : {{title}}</h2>
+        <div style="line-height: 70px">
+            <button>수정</button>
+            <button>삭제</button>
+        </div>
+    </div>
+    <div>작성자 : {{users.nickname}}</div>
+    <div class="detailFlexDiv" style="display: flex; flex-direction: row-reverse">
+        <div>사용자타입 : {{users.role}}</div>
+        &nbsp;&nbsp;|&nbsp;
+        <div>카테고리 : {{category}}</div>
+        &nbsp;&nbsp;|&nbsp;
+        <div>사건상태 : {{status}}</div>
+        &nbsp;&nbsp;|&nbsp;
+        <div>추천수 : {{recom}}</div>
+        &nbsp;&nbsp;|&nbsp;
+        <div>작성일 : {{dateString createdAt}}</div>
+    </div>
+    <div>내용 : {{content}}</div>
+    {{/with}}
+
+    <!-- 댓글 작성 부분 -->
+    <section>
+        <div>
+            <h3>댓글(3)</h3>
+        </div>
+
+        <form method="post" action="/write-comment">
+            <input type="hidden" name="id" value="{{_id}}" />
+            <div>
+            <div>
+                <textarea
+                name="comment"
+                cols="40"
+                rows="3"
+                placeholder="댓글을 입력해주세요"
+                ></textarea>
+                <button>댓글 쓰기</button>
+            </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- 댓글 보여주기 -->
+    <section>
+        <div>
+            <ol>
+                <li>
+                    <div>작성자 : <b>이순신</b></div>
+                    <div class="detailListDiv">
+                        <div>화이팅이에요..</div>
+
+                        <div>
+                            작성일시 : 2024.02.14
+                            <button onclick="deleteComment()">삭제</button>
+                            <button onclick="deleteComment()">수정</button>
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <div class="detailFooter">
+        <div>
+            <a style="border: none;" href="/">목록으로</a>
+        </div>
+    </div>
+</div>

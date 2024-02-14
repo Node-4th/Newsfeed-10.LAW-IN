@@ -1,0 +1,91 @@
+<div class="signUpContainer" style="width: 700px">
+  <h2 style="text-align: center">{{ title }}</h2>
+  <form id="signUpForm">
+    <table>
+      <tr>
+        <td>ID :</td>
+        <td>
+          <input type="text" name="id" id="id" value="" placeholder="아이디를 입력하세요" />
+        </td>
+      </tr>
+      <tr>
+        <td>Email :</td>
+        <td>
+          <input type="text" name="email" id="email" value="" placeholder="이메일을 입력하세요" />
+        </td>
+      </tr>
+      <tr>
+        <td>Password :</td>
+        <td>
+          <input type="password" name="password" id="password" value="" placeholder="비밀번호를 입력하세요(6 ~ 8)" />
+        </td>
+      </tr>
+      <tr>
+        <td>Password Check :</td>
+        <td>
+          <input type="password" name="passwordCheck" id="passwordCheck" value="" placeholder="비밀번호 확인" />
+        </td>
+      </tr>
+      <tr>
+        <td>Nick Name :</td>
+        <td>
+          <input type="text" name="nickname" id="nickname" value="" placeholder="닉네임을 적어주세요" />
+        </td>
+      </tr>
+      <tr>
+        <td>About Me :</td>
+        <td>
+          <input type="text" name="content" id="content" value="" placeholder="간단한 한줄소개 부탁드립니다." />
+        </td>
+      </tr>
+    </table>
+    <div class="signUpBtn">
+      <button type="button" id="signUpbtn">회원가입</button>
+    </div>
+  </form>
+</div>
+
+
+<script>
+
+document.querySelector("#signUpbtn").addEventListener('click', (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(document.getElementById('signUpForm'));
+
+  const signUpData = {
+    id: formData.get('id'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+    passwordCheck: formData.get('passwordCheck'),
+    nickname: formData.get('nickname'),
+    content: formData.get('content'),
+  };
+
+  fetch('/api/sign-up', {
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(signUpData),
+  })
+  .then(response => {
+    return response.json()
+  })
+  .then(data=>{
+    if (data.status === 201) {
+      alert(data.message);
+      return window.location='/api/sign-in'
+    }else if(data.message){
+      alert(data.message);
+      return window.location='/api/sign-up'
+    }else {
+      alert('회원가입에 실패하였습니다.');
+      return window.location='/api/sign-up'
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+});
+
+
+</script>

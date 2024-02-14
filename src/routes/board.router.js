@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import imageUploader from "../s3/ImageUploader.js";
 
 const router = express.Router();
 
@@ -60,6 +61,7 @@ router.post("/boards", authMiddleware, async (req, res, next) => {
 /** 게시글 목록 조회 API **/
 router.get("/boards", async (req, res, next) => {
   try {
+    const isLogIn = !!req.cookies.refreshToken;
     const orderKey = req.query.orderKey ?? "id";
     const orderValue = req.query.orderValue ?? "desc";
 
@@ -70,7 +72,7 @@ router.get("/boards", async (req, res, next) => {
       return res.status(400).json({ success: false, message: "orderValue가 올바르지 않습니다." });
     }
 
-    const boards = await prisma.boards.findMany({
+    let boards = await prisma.boards.findMany({
       select: {
         id: true,
         users: {
@@ -90,13 +92,21 @@ router.get("/boards", async (req, res, next) => {
       },
     });
 
-    console.log(boards);
+    console.log("boards1 => ", boards);
+    boards = categoryAndStatusCheck(boards);
+
+    console.log("boards => ", boards);
 
     if (!boards.length) {
       return res.status(404).json({ success: false, message: "사건 조회에 실패하였습니다." });
     }
 
-    return res.status(200).json({ success: true, message: "사건이 성공적으로 조회되었습니다." });
+    const loginData = {
+      isLogIn: isLogIn,
+    };
+
+    console.log("loginData => ", loginData);
+    return res.status(200).render("board", { boards, loginData });
   } catch (error) {
     next(error);
   }
@@ -167,7 +177,7 @@ router.get("/boards/:id", async (req, res, next) => {
     const { id } = req.params;
     const boardId = Number(id);
 
-    const board = await prisma.boards.findFirst({
+    let board = await prisma.boards.findFirst({
       where: {
         id: +boardId,
       },
@@ -181,6 +191,7 @@ router.get("/boards/:id", async (req, res, next) => {
         category: true,
         title: true,
         content: true,
+        media: true,
         status: true,
         recom: true,
         createdAt: true,
@@ -189,10 +200,49 @@ router.get("/boards/:id", async (req, res, next) => {
     console.log("🚀 ~ router.get ~ board:", board);
 
     if (!board) {
-      return res.status(404).json({ success: false, message: "사건 조회에 실패하였습니다." });
+      return res.status(404).render({ errorMessage: "사건 조회에 실패하였습니다." });
+    }
+    console.log("데이터 바꾸기 전 board => ", board);
+    board = categoryAndStatusCheck(board);
+    console.log("상세게시물 board => ", board);
+
+    return res.status(200).render("detail", { board });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/** 게시글 본문 이미지 업로드 API **/
+router.post("/boards/:id/upload-image", imageUploader.single("image"), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const boardId = Number(id);
+    const media = req.file;
+
+    if (!media) {
+      console.log("No file received");
+      return res.status(400).json({
+        success: false,
+        message: "파일이 없습니다.",
+      });
     }
 
-    return res.status(200).json({ success: true, message: "사건이 성공적으로 조회되었습니다." });
+    // 파일 주소 media에 넣어줌
+    await prisma.boards.update({
+      where: {
+        id: +boardId,
+      },
+      data: {
+        media: media.location,
+      },
+    });
+
+    console.log("file received");
+
+    return res.status(200).json({
+      success: true,
+      message: "파일이 성공적으로 업로드되었습니다.",
+    });
   } catch (error) {
     next(error);
   }
@@ -223,13 +273,6 @@ router.patch("/boards/:id", authMiddleware, async (req, res) => {
     const board = await prisma.boards.findFirst({
       where: {
         id: +boardId,
-      },
-      select: {
-        userId: true,
-        category: true,
-        title: true,
-        content: true,
-        status: true,
       },
     });
 
@@ -301,3 +344,49 @@ router.delete("/boards/:id", authMiddleware, async (req, res) => {
 });
 
 export default router;
+
+function categoryAndStatusCheck(boards) {
+  console.log("여기 들어오기는함");
+  const categoryMap = {
+    Unspecified: "미지정",
+    Fraud: "사기",
+    Affair: "불륜",
+    TrafficAccident: "교통사고",
+    Theft: "도난",
+    Violence: "폭행",
+  };
+  const statusMap = {
+    Notset: "미설정",
+    Proceeding: "진행중",
+    Solved: "해결완료",
+    Incomplete: "미완료",
+  };
+  console.log("여기 들어오기는함2");
+  let newCategory = "";
+  let newStatus = "";
+  console.log("여기 들어오기는함3");
+
+  if (typeof boards === "object" && Object.keys(boards).length > 0 && !Array.isArray(boards)) {
+    boards.category = categoryMap[boards.category];
+    boards.status = statusMap[boards.status];
+    console.log(boards.category, boards.status);
+  }
+
+  for (let i = 0; i < boards.length; i++) {
+    const category = boards[i].category;
+    const status = boards[i].status;
+    console.log(category);
+    console.log(status);
+
+    newCategory = categoryMap[category] || category;
+    newStatus = statusMap[status] || status;
+
+    boards[i].category = newCategory;
+    boards[i].status = newStatus;
+    console.log(boards[i].category);
+    console.log(boards[i].status);
+  }
+  console.log("여기 들어오기는함4");
+
+  return boards;
+}
