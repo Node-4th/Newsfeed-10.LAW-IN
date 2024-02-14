@@ -104,7 +104,7 @@ router.post("/sign-up", async (req, res, next) => {
 
     return res
       .status(201)
-      .json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.", createdUser });
+      .json({ success: true, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.", createdUser });
   } catch (err) {
     next(err);
   }
@@ -164,7 +164,7 @@ router.get("/mail-check", AuthMiddleware, async (req, res) => {
         if (error) {
           console.error("이메일 전송 실패:", error);
           smtpTransport.close();
-          return res.status(500).json({ message: "인증 메일 전송에 실패했습니다." });
+          return res.status(500).json({ success: false, message: "인증 메일 전송에 실패했습니다." });
         } else {
           console.log("이메일 전송 성공.");
           smtpTransport.close();
@@ -189,15 +189,15 @@ router.post("/mail-check", AuthMiddleware, async (req, res) => {
     const { authCode } = req.body;
 
     if (req.user.isEmailValid) {
-      return res.status(401).json({ message: "이미 인증된 사용자입니다." });
+      return res.status(401).json({ success: false, message: "이미 인증된 사용자입니다." });
     }
 
     if (!authCode) {
-      return res.status(401).json({ message: "인증 번호를 입력해주세요." });
+      return res.status(401).json({ success: false, message: "인증 번호를 입력해주세요." });
     }
 
     if (!(await bcrypt.compare(authCode, req.cookies.authCode))) {
-      return res.status(401).json({ message: "인증번호가 일치하지 않습니다." });
+      return res.status(401).json({ success: false, message: "인증번호가 일치하지 않습니다." });
     }
 
     await prisma.users.update({
@@ -223,11 +223,12 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
   const { password } = req.body;
 
   if (!password) {
-    return res.status(400).json({ message: "비밀번호가 입력되지 않았습니다." });
+    return res.status(400).json({ success: false, message: "비밀번호가 입력되지 않았습니다." });
   }
 
   if (password.length < 6) {
     return res.status(400).json({
+      success: false,
       message: "비밀번호는 6자 이상이어야 합니다.",
     });
   }
@@ -270,7 +271,7 @@ router.post("/sign-in", async (req, res) => {
   const user = await prisma.users.findFirst({ where: { id } });
 
   if (!user) {
-    return res.status(401).json({ message: "존재하지 않는 유저 입니다." });
+    return res.status(401).json({ success: false, message: "존재하지 않는 유저 입니다." });
   } else if (!(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ success: false, message: "비밀번호가 일치하지 않습니다." });
   }
