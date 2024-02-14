@@ -369,7 +369,7 @@ passport.use(
   "kakao",
   new KakaoStrategy(
     {
-      clientID: process.env.KAKAO_KEY, // 카카오에서 발급받은 rest api 키
+      clientID: process.env.KAKAO_ID, // 카카오에서 발급받은 rest api 키
       clientSecret: process.env.KAKAO_SECRET, // 카카오에서 발급받은 클라이언트 시크릿 키
       callbackURL: "http://localhost:3010/api/log-in/kakao/callback", // 카카오 로그인 리디렉트 경로(로그인 후 카카오가 결과 전송할 url)
     },
