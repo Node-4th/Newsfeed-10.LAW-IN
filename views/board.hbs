@@ -7,7 +7,7 @@
       <a href="/api/sign-up">회원가입</a>
       {{/if}}
     </nav>
-    <!-- 검색어 영역 -->
+    {{!-- <!-- 검색어 영역 -->
     <input
       type="text"
       name="search"
@@ -21,7 +21,7 @@
       onclick="location.href = `/?search=${document.getElementById('search').value}`"
     >
       검색
-    </button>
+    </button> --}}
     <br />
     <section class="boardSection">
       <h2 style="margin: 20px">게시판</h2>
@@ -50,26 +50,6 @@
 
       </table>
     </section>
-
-    <div class="boardfootDiv">
-      <a href="글쓰기"> 글쓰기</a>
-      <div>
-        <a href="/?page=1&search={{@root.search}}">&lt;&lt;</a>
-
-        <a>&lt;</a>
-
-        <a href="#">1</a>
-        <a href="#">2</a>
-        <a href="#">3</a>
-        <a href="#">4</a>
-        <a href="#">5</a>
-
-        <a>&gt;</a>
-
-        <a href="/?page={{lastPage}}&search={{@root.search}}">&gt;&gt;</a>
-      </div>
-    </div>
-    <img src="https://corinybucket.s3.ap-northeast-2.amazonaws.com/image/1707910243628_1707909702975_free-icon-cat-5222191.png" alt="사진이였던것" width="100px" height="100px">
 
 <script>
   const postOption ={

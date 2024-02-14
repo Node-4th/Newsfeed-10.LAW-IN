@@ -42,6 +42,7 @@ router.post("/sign-up", async (req, res, next) => {
     if (!passwordCheck) {
       return res.status(400).json({ success: false, message: "비밀번호를 다시 한 번 입력해주세요." });
     }
+
     if (password !== passwordCheck) {
       return res.status(400).json({
         success: false,
@@ -74,32 +75,14 @@ router.post("/sign-up", async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const createdUser = await prisma.$transaction(async (tx) => {
-      const user = await tx.users.create({
-        data: {
-          id,
-          email,
-          password: hashedPassword,
-          nickname,
-          content,
-        },
-      });
-
-      const userInfo = await tx.users.findFirst({
-        where: {
-          id: user.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          nickname: true,
-          content: true,
-          role: true,
-          follow: true,
-        },
-      });
-
-      return userInfo;
+    await prisma.users.create({
+      data: {
+        id,
+        email,
+        password: hashedPassword,
+        nickname,
+        content,
+      },
     });
 
     return res.status(201).json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요." });
@@ -252,7 +235,10 @@ router.delete("/sign-out", AuthMiddleware, async (req, res) => {
     },
   });
 
-  return res.status(201).json({ success: true, message: "회원 탈퇴가 완료되었습니다." });
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+
+  return res.status(201).json({ isSuccess: true, message: "회원 탈퇴가 완료되었습니다." });
 });
 
 //NOTE - 로그인 페이지 이동
@@ -370,33 +356,17 @@ router.patch("/myInfo", AuthMiddleware, async (req, res) => {
     return res.status(401).json({ success: false, message: "비밀번호가 일치하지 않습니다." });
   }
 
-  const updateUser = await prisma.$transaction(async (tx) => {
-    const user = await tx.users.update({
-      where: {
-        id: id,
-      },
-      data: {
-        nickname,
-        content,
-      },
-    });
-
-    const userInfo = await tx.users.findFirst({
-      where: {
-        id: user.id,
-      },
-      select: {
-        id: true,
-        email: true,
-        nickname: true,
-        content: true,
-        role: true,
-        follow: true,
-      },
-    });
-    return userInfo;
+  await prisma.users.update({
+    where: {
+      id: id,
+    },
+    data: {
+      nickname,
+      content,
+    },
   });
-  return res.status(201).json({ success: true, message: "회원 정보가 수정되었습니다.", userInfo: updateUser });
+
+  return res.status(201).json({ isSuccess: true, message: "회원 정보가 성공적으로 수정되었습니다." });
 });
 
 // 카카오 로그인

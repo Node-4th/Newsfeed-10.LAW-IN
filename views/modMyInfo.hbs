@@ -5,7 +5,7 @@
     <div>이메일 : {{email}}</div>
     <div>내권한 : {{role}}</div>
     <div>팔로우 : {{follow}}</div>
-    <form action="">
+    <form id="modForm">
         <div>
             닉네임 : <input type="text" id="nickname" name="nickname" value="{{nickname}}">
         </div>
@@ -25,3 +25,37 @@
         </div>
     </form>
 </div>
+
+<script>
+
+    document.querySelector("#modBtn").addEventListener('click',(e)=>{
+        e.preventDefault();
+
+        const formData = new FormData(document.getElementById('modForm'));
+
+        const modData = {
+            nickname: formData.get('nickname'),
+            content: formData.get('content'),
+            password: formData.get('password'),
+            passwordCheck: formData.get('passwordCheck'),
+        };
+
+        fetch('/api/myInfo',{
+            method: 'PATCH', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modData)
+        })
+        .then(response=>{
+            return response.json()
+        })
+        .then(data => {
+            if(data.isSuccess === true){
+                alert(data.message)
+                window.location='/api/boards';
+            }else{
+                alert("삭제에 실패했습니다. 패스워드를 확인해주세요");
+                window.location='/api/myInfo';
+            }
+        })
+    })
+</script>

@@ -17,4 +17,39 @@
 
 
 <script>
+
+    const deleteOption = {
+      method:'DELETE',
+      headers:{
+        'Content-Type':'application/json',
+      },
+    }
+
+    document.querySelector('#delBtn').addEventListener('click',(e)=>{
+        e.preventDefault();
+        const password = prompt('탈퇴하려면 패스워드를 입력해주세요')
+
+        if(!password){
+            return;
+        }
+
+        fetch('/api/sign-out',{
+            ...deleteOption,
+            body: JSON.stringify({password})
+        })
+        .then(response=>{
+            return response.json()
+        })
+        .then(data => {
+            if(data.isSuccess === true){
+                alert(data.message)
+                window.location='/api/boards';
+            }else{
+                alert("삭제에 실패했습니다. 패스워드를 확인해주세요");
+                window.location='/api/myInfo';
+            }
+        })
+    })
+
+
 </script>
