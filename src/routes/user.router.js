@@ -100,9 +100,7 @@ router.post("/sign-up", async (req, res, next) => {
       return userInfo;
     });
 
-    return res
-      .status(201)
-      .json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.", createdUser });
+    return res.status(201).json({ status: 201, message: "회원가입이 성공적으로 완료되었습니다. 로그인해주세요." });
   } catch (err) {
     next(err);
   }
@@ -263,7 +261,6 @@ router.get("/sign-in", async (req, res) => {
 //NOTE - 로그인
 router.post("/sign-in", async (req, res) => {
   const { id, password } = req.body;
-  console.log("id, password =>", id, password);
 
   const user = await prisma.users.findFirst({ where: { id } });
 
@@ -280,6 +277,7 @@ router.post("/sign-in", async (req, res) => {
     process.env.JWT_SECRET_KEY,
     { expiresIn: "12h" }
   );
+
   const refreshToken = jwt.sign(
     {
       email: user.email,
@@ -301,7 +299,6 @@ router.post("/sign-in", async (req, res) => {
   res.cookie("accessToken", `Bearer ${accessToken}`);
   res.cookie("refreshToken", `Bearer ${refreshToken}`);
 
-  console.log(user);
   return res.status(200).redirect("/");
 });
 
@@ -317,11 +314,11 @@ router.post("/log-out", AuthMiddleware, async (req, res) => {
       token: null,
     },
   });
+
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
-  console.log("isSuccess => ", isSuccess);
+
   isSuccess.token === null ? (isSuccess = true) : (isSuccess = false);
-  console.log("isSuccess => ", isSuccess);
 
   return res.status(200).json({ isSuccess });
 });
