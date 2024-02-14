@@ -2,10 +2,12 @@ import express from "express";
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import passport from "passport";
+import { Strategy as KakaoStrategy } from "passport-kakao";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
 import { prisma } from "../utils/prisma/index.js";
-
 const router = express.Router();
+// const KakaoStrategy = passport-kakao.Strategy;
 
 router.get("/sign-up", (req, res) => {
   return res.render("signUp", { title: "회원가입" });
@@ -399,5 +401,37 @@ router.patch("/myInfo", AuthMiddleware, async (req, res) => {
   });
   return res.status(201).json({ success: true, message: "회원 정보가 수정되었습니다.", userInfo: updateUser });
 });
+
+// 카카오 로그인
+passport.use(
+  "kakao",
+  new KakaoStrategy(
+    {
+      clientID: process.env.KAKAO_KEY, // 카카오에서 발급받은 rest api 키
+      clientSecret: process.env.KAKAO_SECRET, // 카카오에서 발급받은 클라이언트 시크릿 키
+      callbackURL: "http://localhost:3010/api/log-in/kakao/callback", // 카카오 로그인 리디렉트 경로(로그인 후 카카오가 결과 전송할 url)
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      // 로그인 성공하면 카카오가 토큰을 보내주고, profile에는 카카오가 보내준 유저 정보 담겨있음
+      // 가입 이력이 있으면 바로 done, 없으면 그자리에서 회원가입 후 done
+      console.log(accessToken);
+      console.log(profile);
+    }
+  )
+);
+
+router.get("/log-in/kakao", passport.authenticate("kakao")); // 요청 들어오고 카카오 로그인 페이지로 이동
+
+router.get(
+  "/log-in/kakao/callback", // 카카오에서 설정한 리디렉트 url로 요청 재전달
+  passport.authenticate("kakao", {
+    // passport-kakao는 req.login을 자체적으로 호출하기 때문에 인자에 콜백함수 안들어감
+    failureRedirect: "/log-in", // 유저가 카카오 연동 로그인에 실패했을 경우 해당 라우터로 이동
+  }),
+  (req, res, next) => {
+    // 유저가 로그인 성공하면 다음 라우터로 이동
+    res.redirect("/");
+  }
+);
 
 export default router;
