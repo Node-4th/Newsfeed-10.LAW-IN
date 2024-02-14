@@ -7,7 +7,6 @@ import { Strategy as KakaoStrategy } from "passport-kakao";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
 import { prisma } from "../utils/prisma/index.js";
 const router = express.Router();
-// const KakaoStrategy = passport-kakao.Strategy;
 
 router.get("/sign-up", (req, res) => {
   return res.render("signUp", { title: "회원가입" });
