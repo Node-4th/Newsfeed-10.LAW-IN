@@ -1,3 +1,5 @@
+<img src='https://github.com/Node-4th/Newsfeed-10.LAW-IN/assets/127919222/449abe17-6ba9-4dc8-a754-3d3eb7b8291a' width='1000px'>
+
 # 법률상담 뉴스피드 Law In
 ![JavaScript](https://img.shields.io/badge/Handlebars%20js-f0772b?style=for-the-badge&logo=handlebarsdotjs&logoColor=black)
 ![Node](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
